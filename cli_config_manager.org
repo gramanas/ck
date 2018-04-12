@@ -1,0 +1,58 @@
+* configs
+** folder
+** file
+** 
+* supported actions
+** init
+*** set VC directory
+*** set SECRET directory
+** add [NEW] config PROGRAMM PATH {SECRET} {PRIMARY}
+** edit PROGRAMM[/CONFIG_FILENAME]
+** list programms {tree, paths, only programs}
+** infile-search REGEXP
+
+* Backend
+** ADD
+*** if file exists mv it to VC_dir
+*** if it is new create it to VC_dir
+*** create soft link to config's path
+** EDIT
+*** edit primary conf file, unless stated otherwise
+** LIST
+*** TREE
+**** Tree like view of all configs under their corresponding program
+
+*** PATHS
+**** list of paths the configs link to
+*** PROGRAMS
+**** list of indexed programs
+** SEARCH
+*** simple mode
+**** regexp matches against paths and program names
+**** returns list of matched paths
+*** infile
+**** regexp matches in the lines of the indexed files
+**** returns grep like resulst of matching lines
+
+* Schema
+** PROGRAMS
+| ID | NAME    |
+|----+---------|
+|  1 | emacs   |
+|  2 | weechat |
+
+** CONFIGS
+| ID | PATH  | SECRET | PRIMARY |
+|----+-------+--------+---------|
+|  1 | /.../ | T      | T       |
+|  2 | ...   | T      | F       |
+|  3 | ...   | F      | F       |
+|  4 | ...   | F      | T       |
+
+** PC
+| PID | CID |
+|-----+-----|
+| 1   | 1   |
+| 1   | 2   |
+| 2   | 3   |
+| 2   | 4   |
