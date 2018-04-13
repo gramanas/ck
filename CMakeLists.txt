@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.5.6)
 project(ck C)
 
+
 # Set project directories
 set(PROJECT_SOURCE_DIR ./src)
 # Set source code locations
@@ -12,10 +13,15 @@ set(ckLib_hdr
 #  ${PROJECT_SOURCE_DIR}/tui.hpp
 )
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+
+find_package(SQLite3)
+
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${CMAKE_BINARY_DIR})
+include_directories(${SQLITE3_INCLUDE_DIRS})
 
 # Create the shared library
 add_library (ckLib SHARED 
@@ -26,3 +32,4 @@ add_library (ckLib SHARED
 # Link
 add_executable(ck ${ckBin_src})
 target_link_libraries (ck ckLib)
+target_link_libraries (ck ${SQLITE3_LIBRARIES})
