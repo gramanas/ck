@@ -1,0 +1,23 @@
+#!/bin/bash
+BIN=/build/ck
+
+TEST_LOCATION=@PROJECT_TESTING_GROUNDS@
+mkdir -p $TEST_LOCATION/vc
+mkdir $TEST_LOCATION/sec
+
+exec $BIN/ck init $TEST_LOCATION/vc $TEST_LOCATION/sec > /dev/null 2>&1 &
+wait $!
+
+if [ ! -f ~/.ck/ckrc ]; then
+    echo -e $ERROR"Config file not created."
+    exit 1
+fi
+
+if [ ! -f ~/.ck/ckdb ]; then
+    echo -e $ERROR"DB file not created."
+    exit 1
+fi
+
+rm -rf $HOME/.ck
+rm -rf $TEST_LOCATION
+echo -e $PASS

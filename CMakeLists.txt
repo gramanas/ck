@@ -1,9 +1,8 @@
 cmake_minimum_required (VERSION 3.5.6)
 project(ck C)
 
-
 # Set project directories
-set(PROJECT_SOURCE_DIR ./src)
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 # Set source code locations
 set(ckBin_src ${PROJECT_SOURCE_DIR}/ck.c)
 set(ckLib_src
@@ -42,3 +41,10 @@ add_library (ckLib SHARED
 add_executable(ck ${ckBin_src})
 target_link_libraries (ck ckLib)
 target_link_libraries (ck ${SQLITE3_LIBRARIES})
+
+# copy test file
+set(PROJECT_TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
+set(BIN_TEST_DIR ${CMAKE_BINARY_DIR}/tests)
+set(PROJECT_TESTING_GROUNDS ${CMAKE_BINARY_DIR}/test_files)
+configure_file(${PROJECT_TEST_DIR}/init ${BIN_TEST_DIR}/init @ONLY)
+configure_file(test_ck test_ck @ONLY)
