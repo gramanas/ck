@@ -1,4 +1,29 @@
 * ck
 ** The Config Keeper
 
-Under heavy development
+* build it
+** requirements
+- gcc
+- cmake
+- sqlite3-dev
+
+** make
+#+BEGIN_SRC sh
+# clone the repo
+> cd ~/code; git clone https://github.com/gramanas/ck
+# make a build directory and enter it
+> mkdir ~/ck_build; cd ~/ck_build;
+# run cmake
+> cmake ~/code/ck
+# run make
+> make
+#+END_SRC
+
+** run the tests
+Simply go to the build dir and type.
+
+*WARNING!* This will destroy any configurations or databases
+you might have. (for now)
+#+BEGIN_SRC sh
+./test_ck
+#+END_SRC
