@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "actionparser.h"
 
 /* --------------------------------------------------------------------------
@@ -18,6 +22,7 @@ const char* const strEDIT[] = {"3", "edit", "e", "-e"};
 const char* const strLIST[] = {"3", "list", "ls", "-ls"};
 const char* const strSEARCH[] = {"3", "search", "s", "-s"};
 const char* const strHELP[] = {"4", "help", "?", "-h", "--help"};
+const char* const strConfDir[] = {"3", "config", "conf", "-c"};
 
 /* Number of opts */
 static int optNum;
@@ -44,21 +49,19 @@ int nextToken() {
 }
 
 void getOpt(int position, UserOpt *opt) {
-    // get arg
-    nextToken();
+  // get arg
+  nextToken();
 
-    // allocate memory
-    opt->argv[position] = (char *)malloc((strlen(token)+1)*sizeof(char));
-    strcpy(opt->argv[position], token);
+  // allocate memory
+  opt->argv[position] = (char *)malloc((strlen(token)+1)*sizeof(char));
+  strcpy(opt->argv[position], token);
 }
 
 /* When starting to parse the action,
  * `pos` should be at 2
  * like so "ck ACTION ..."
  *                    ^               */
-int parseINIT(UserOpt *opt) {
-  // if db exists init should fail before checking for args
-
+int parse_INIT(UserOpt *opt) {
   // INIT expects 2 arguments
   // starting from 0
   opt->argc = 2;
@@ -73,25 +76,30 @@ int parseINIT(UserOpt *opt) {
   return 1;
 }
 
-int parseADD(UserOpt *opt) {
+int parse_ADD(UserOpt *opt) {
   // ADD expects 2 to 4 arguments
   if (optNum <= pos + 1
       || optNum > pos + 4) {
     opt->err = PERR_ADD_WRONG;
     return -1;
   }
+
+  opt->argc = optNum - pos;
+  for (int i = 0; i < opt->argc; i++) {
+    getOpt(i, opt);
+  }
   return 1;
 }
 
-int parseDEL(UserOpt *opt) {
+int parse_DEL(UserOpt *opt) {
 }
-int parseEDIT(UserOpt *opt) {
+int parse_EDIT(UserOpt *opt) {
 }
-int parseLIST(UserOpt *opt) {
+int parse_LIST(UserOpt *opt) {
 }
-int parseSEARCH(UserOpt *opt) {
+int parse_SEARCH(UserOpt *opt) {
 }
-int parseHELP(UserOpt *opt) {
+int parse_HELP(UserOpt *opt) {
 }
 
 
@@ -99,7 +107,7 @@ int parseVals(UserOpt *opt) {
   switch (opt->action) {
 #define X(ACTION)                             \
     case CKA_##ACTION:                           \
-      return parse##ACTION(opt);
+      return parse_##ACTION(opt);
     CK_ACTIONS
 #undef X
   default:
@@ -135,6 +143,38 @@ UserOpt initUserOpt() {
   return uo;
 }
 
+
+void getConfig(UserOpt *opt) {
+  // get first token
+  nextToken();
+  int ok = 1;
+  for (int i = 1; i < atoi(strConfDir[0]) + 1; i++) {
+    if (strcmp(token, strConfDir[i]) == 0) {
+      if (nextToken() == -1) {
+        printf("Config needs a value\n");
+        exit(1);
+      }
+      struct stat st = {0};
+      if (stat(token, &st) == -1) {
+        printf("%s is not a directory\n", token);
+        exit(1);
+      }
+      opt->confDir = malloc(sizeof(token));
+      strcpy(opt->confDir, token);
+      return;
+    }
+  }
+  char * defaultConf = "/.ck";
+  char * home = getenv("HOME");
+  opt->confDir = malloc(sizeof(defaultConf)+sizeof(home));
+  strcpy(opt->confDir, home);
+  strcat(opt->confDir, defaultConf);
+
+  // rewind
+  pos = pos - 1;
+  token = opts[pos];
+}
+
 ParseResult parseAction(int argc, char* argv[], UserOpt *opt) {
   *opt = initUserOpt();
   if (argc < 2) {
@@ -146,6 +186,7 @@ ParseResult parseAction(int argc, char* argv[], UserOpt *opt) {
   // skip the program nake
   nextToken();
 
+  getConfig(opt);
   // get action
   nextToken();
   opt->action = determineAction();
@@ -200,7 +241,7 @@ void printParserError(UserOpt *opt) {
     asprintf(&errStr, "Unknown action: %s", token);
     break;
   case PERR_INIT_WRONG:
-    asprintf(&errStr, "Initialize database\nUsage: %s VC_dir SCRT_dir DB_dir", getPossibleActionName(strINIT));
+    asprintf(&errStr, "Initialize database\nUsage: %s version_control_dir secret_dir", getPossibleActionName(strINIT));
     break;
   case PERR_ADD_WRONG:
     asprintf(&errStr, "Add config (new or existing)\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", getPossibleActionName(strADD));
@@ -226,16 +267,14 @@ void printParserError(UserOpt *opt) {
 }
 
 void printParserHelp() {
-  printf("ck - the config keeper");
-  printf("\n----------------------");
-  printf("\n----------------------\n");
-  printf("Usage:\n");
-  printf("Initialize: \t%s\n", getPossibleActionName(strINIT));
-  printf("Add config: \t%s\n", getPossibleActionName(strADD));
-  printf("Delete config: \t%s\n", getPossibleActionName(strDEL));
-  printf("Edit config: \t%s\n", getPossibleActionName(strEDIT));
-  printf("List configs: \t%s\n", getPossibleActionName(strLIST));
-  printf("Search: \t%s\n", getPossibleActionName(strSEARCH));
-  printf("Print this: \t%s\n", getPossibleActionName(strHELP));
+  printf("ck - the config keeper\n"                               );
+  printf("Usage:\n"                                               );
+  printf("Initialize: \t%s\n",      getPossibleActionName(strINIT));
+  printf("Add config: \t%s\n",       getPossibleActionName(strADD));
+  printf("Delete config: \t%s\n",    getPossibleActionName(strDEL));
+  printf("Edit config: \t%s\n",     getPossibleActionName(strEDIT));
+  printf("List configs: \t%s\n",    getPossibleActionName(strLIST));
+  printf("Search: \t%s\n",        getPossibleActionName(strSEARCH));
+  printf("Print this: \t%s\n",      getPossibleActionName(strHELP));
   exit(0);
 }

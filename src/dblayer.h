@@ -21,12 +21,13 @@ enum SqlErrors {
 
 typedef struct DBstruct DB;
 struct DBstruct {
-  sqlite3 *get;
+  sqlite3 *ptr;
   SqlError error;
 };
 
 extern int db_exists();
 extern DB open_DB();
+extern void close_DB(DB *DB);
 
 /* init */
 extern void init_make_tables(DB *db);

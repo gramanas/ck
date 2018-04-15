@@ -2,7 +2,7 @@
 
 DIR=@BIN_TEST_DIR@
 for i in $( ls $DIR ); do
-    ERROR="TEST "$i" FAILED:\n"
-    PASS="TEST "$i" PASSED\n"
+    ERROR="TEST "$i" FAILED:"
+    PASS="TEST "$i" PASSED"
     source $DIR/$i
 done

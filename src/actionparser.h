@@ -38,13 +38,10 @@ enum ParseErrors {
 
 typedef enum CkActions CkAction;
 enum CkActions {
-  CKA_INIT,
-  CKA_ADD,      // program, path, primary, secret
-  CKA_DEL,      // program regexp, if only programm, delete everything related
-  CKA_EDIT,     // program regexp, if only program, edit primary
-  CKA_LIST,     // list_type{tree,paths,programs}
-  CKA_SEARCH,   // search_mode, regexp
-  CKA_HELP      // help
+#define X(ACTION)                               \
+  CKA_##ACTION,
+  CK_ACTIONS
+#undef X
 };
 
 typedef enum OptParserResults ParseResult;
@@ -58,6 +55,7 @@ typedef struct UserOptions UserOpt;
 struct UserOptions {
   ParseError err;
   CkAction action;
+  char *confDir;
   int argc;
   char *argv[10]; // action's options
 };

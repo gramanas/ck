@@ -51,11 +51,15 @@ int check_initialized_DB(sqlite3 *db) {
 }
 
 DB empty_DB(SqlError err) {
-  return (DB){ .get = NULL, .error = err };
+  return (DB){ .ptr = NULL, .error = err };
 }
 
 DB new_DB(sqlite3 *db) {
-  return (DB){ .get = db, .error = SQL_NO_ERR };
+  return (DB){ .ptr = db, .error = SQL_NO_ERR };
+}
+
+void close_DB(DB *db) {
+  sqlite3_close(db->ptr);
 }
 
 DB init_make_DB() {
@@ -102,7 +106,7 @@ void init_make_tables(DB *db) {
     "prime          INT     NOT NULL);";
 
   char *err_msg = NULL;
-  int rc = sqlite3_exec(db->get, sql, 0, 0, &err_msg);
+  int rc = sqlite3_exec(db->ptr, sql, 0, 0, &err_msg);
   if (rc != SQLITE_OK ) {
     printf("SQL error: %s\n", err_msg);
     sqlite3_free(err_msg);

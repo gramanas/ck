@@ -5,7 +5,7 @@ TEST_LOCATION=@PROJECT_TESTING_GROUNDS@
 mkdir -p $TEST_LOCATION/vc
 mkdir $TEST_LOCATION/sec
 
-exec $BIN/ck init $TEST_LOCATION/vc $TEST_LOCATION/sec > /dev/null 2>&1 &
+exec $BIN/ck init $TEST_LOCATION/vc $TEST_LOCATION/sec &
 wait $!
 
 if [ ! -f ~/.ck/ckrc ]; then
