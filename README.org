@@ -25,5 +25,5 @@ Simply go to the build dir and type.
 *WARNING!* This will destroy any configurations or databases
 you might have. (for now)
 #+BEGIN_SRC sh
-./test_ck
+./check_ck
 #+END_SRC
