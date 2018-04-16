@@ -6,17 +6,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "dblayer.h"
 
-int db_exists() {
-  FILE *db_file;
+const char * const DB_NAME = "/ckdb";
 
-  if ((db_file = fopen("/home/gramanas/.ck/ckdb", "rb")) == NULL) {
-    return 0;
+char *make_db_name(char * confPath) {
+  char *db_path = strdup(confPath);
+  
+  db_path = realloc(db_path, strlen(confPath)+strlen(DB_NAME)+1);
+  strcat(db_path, DB_NAME);
+
+  return db_path;
+}
+
+int db_exists(UserOpt *opt) {
+  char *db_path = make_db_name(opt->confDir);
+  int ret;
+  ret = 0;
+  if (access(db_path, F_OK) == 0) {
+    ret = 1;
   }
-  fclose(db_file);
-  return 1;
+  free(db_path);
+  return ret;
 }
 
 // check if db has the correct tables
@@ -62,24 +75,27 @@ void close_DB(DB *db) {
   sqlite3_close(db->ptr);
 }
 
-DB init_make_DB() {
+DB init_make_DB(UserOpt *opt) {
   sqlite3 *db;
   int rc;
 
-  rc = sqlite3_open("/home/gramanas/.ck/ckdb", &db);
-
-  if (rc) {
+  char *db_path = make_db_name(opt->confDir);
+  rc = sqlite3_open(db_path, &db);
+  free(db_path);
+  if (rc != SQLITE_OK) {
     return empty_DB(SQL_ERR_NO_DB_FILE);
   }
 
   return new_DB(db);
 }
 
-DB open_DB() {
+DB open_DB(UserOpt *opt) {
   sqlite3 *db;
   int rc;
 
-  rc = sqlite3_open("/home/gramanas/.ck/ckdb", &db);
+  char *db_path = make_db_name(opt->confDir);  
+  rc = sqlite3_open(db_path, &db);
+  free(db_path);
 
   if (rc) {
     return empty_DB(SQL_ERR_NO_DB_FILE);

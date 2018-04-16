@@ -1,11 +1,14 @@
 * ck
-** The Config Keeper
+*The Config Keeper*
 
 * build it
 ** requirements
-- gcc
+- clang (llvm) or gcc (gnu)
 - cmake
 - sqlite3-dev
+
+** gcc
+Edit the =CMakeLists.txt= file and change the =clang= to =gcc=
 
 ** make
 #+BEGIN_SRC sh
@@ -17,13 +20,34 @@
 > cmake ~/code/ck
 # run make
 > make
+# run ck
+> ./ck
 #+END_SRC
 
-** run the tests
-Simply go to the build dir and type.
+* for devs
+** make
+Just build with address sanitizer enabled like so:
+llvm has better asan than gcc, so I use that.
+#+BEGIN_SRC sh
+# clone the repo
+> cd ~/code; git clone https://github.com/gramanas/ck
+# make a build directory and enter it
+> mkdir ~/ck_build; cd ~/ck_build;
+# run cmake
+> cmake ~/code/ck -DCK_ASAN=ON
+# run make
+> make
+# run ck
+> ./ck
+#+END_SRC
 
-*WARNING!* This will destroy any configurations or databases
-you might have. (for now)
+** tests
+The testing "suite" is just a bash script
+that executs all the bash scripts under
+=tests/=
+
+*** run tests
+Simply go to the build dir and type.
 #+BEGIN_SRC sh
 ./check_ck
 #+END_SRC

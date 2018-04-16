@@ -8,6 +8,9 @@
  * ------------------------------------------------------------------ */
 #ifndef CONFPARSER_H
 #define CONFPARSER_H
+
+#include "actionparser.h"
+
 #define CONFIG_VARIABLES_TABLE                                          \
   X(VC_dir,   " version_control_dir = %s ", "Version Control directory") \
   X(SCRT_dir, " secret_dir = %s "         , "Secret directory")
@@ -40,6 +43,7 @@ struct ConfigValues {
 };
 #undef X
 
-extern int config_file_parse(Conf *conf);
+extern int config_file_parse(Conf *conf, UserOpt *opt);
 
+extern int init_create_config_file(UserOpt *opt);
 #endif // CONFPARSER_H

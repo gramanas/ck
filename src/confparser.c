@@ -1,11 +1,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <dirent.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "confparser.h"
 
-const char* const configFilename = ".ckrc";
+
+const char * const CONFIG_NAME = "/ckrc";
 
 void conf_values_initialize(Conf *c) {
   c->SCRT_dir = NULL;
@@ -65,12 +69,24 @@ int is_dir(char *path) {
   return 1;
 }
 
-ConfigParserResult parse(Conf *conf) {
+char *make_config_name(char * confPath) {
+  char *db_path = strdup(confPath);
+
+  db_path = realloc(db_path, strlen(confPath) + strlen(CONFIG_NAME)+1);
+  strcat(db_path, CONFIG_NAME);
+
+  return db_path;
+}
+
+ConfigParserResult parse(Conf *conf, UserOpt *opt) {
   conf_values_initialize(conf);
   FILE *confPtr;
-  if ((confPtr = fopen("/home/gramanas/.ck/ckrc", "r")) == NULL) {
+  char *confName = make_config_name(opt->confDir);
+  if ((confPtr = fopen(confName, "r")) == NULL) {
+    free(confName);
     return CPR_NO_CONFIG_FILE;
   }
+  free(confName);
   int flag = 1;
   char *line = read_next_line(confPtr);
   char matched[200];
@@ -78,9 +94,10 @@ ConfigParserResult parse(Conf *conf) {
     switch(match_variables(line, matched)) {
 #define X(var, str, name)                       \
       case CV_##var:                            \
-        conf->var = malloc(strlen(matched));    \
+        conf->var = malloc(strlen(matched)+1);  \
         strcpy(conf->var, matched);             \
         if (!is_dir(matched)) {                 \
+          free(conf->var);                      \
           return CPR_WRONG_##var;               \
         }                                       \
         break;
@@ -105,8 +122,8 @@ ConfigParserResult parse(Conf *conf) {
   return CPR_NO_CONFIG_FILE;
 }
 
-int config_file_parse(Conf *conf) {
-  switch (parse(conf)) {
+int config_file_parse(Conf *conf, UserOpt *opt) {
+  switch (parse(conf, opt)) {
 #define X(var,str,name)                                                 \
     case CPR_WRONG_##var:                                               \
       printf("Config error:\n"                                          \
@@ -124,4 +141,43 @@ int config_file_parse(Conf *conf) {
   case CPR_OK:
     return 1;
   }
+}
+
+int init_create_config_file(UserOpt *opt) {
+  struct stat st = {0};
+  char tmp[200];
+  if (stat(opt->argv[0], &st) == -1) {
+    printf("Version control directory: %s\ndoes not exist.\n", opt->argv[0]);
+    return 1;
+  }
+
+  if (stat(opt->argv[1], &st) == -1) {
+    printf("Secret directory: %s\ndoes not exist.\n", opt->argv[1]);
+    return 1;
+  }
+  
+  if (stat(opt->confDir, &st)  == -1) {
+    mkdir(opt->confDir, 0755);
+  }
+
+  char *confName = make_config_name(opt->confDir);
+  FILE *f;
+  if ((f = fopen(confName, "w")) == NULL) {
+    free(confName);
+    return 1;
+  }
+  
+  strcpy(tmp, "version_control_dir = ");
+  strcat(tmp, opt->argv[0]);
+  strcat(tmp, "\n");
+  fputs(tmp, f);
+
+  strcpy(tmp, "secret_dir = ");
+  strcat(tmp, opt->argv[1]);
+  strcat(tmp, "\n");
+  fputs(tmp, f);
+  fclose(f);
+
+  free(confName);
+  return 0;
 }

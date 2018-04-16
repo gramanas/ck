@@ -11,6 +11,8 @@
 
 #include <sqlite3.h>
 
+#include "actionparser.h"
+
 typedef enum SqlErrors SqlError;
 enum SqlErrors {
   SQL_NO_ERR = 0,
@@ -25,7 +27,7 @@ struct DBstruct {
   SqlError error;
 };
 
-extern int db_exists();
+extern int db_exists(UserOpt *opt);
 extern DB open_DB();
 extern void close_DB(DB *DB);
 

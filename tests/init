@@ -5,19 +5,20 @@ TEST_LOCATION=@PROJECT_TESTING_GROUNDS@
 mkdir -p $TEST_LOCATION/vc
 mkdir $TEST_LOCATION/sec
 
-exec $BIN/ck init $TEST_LOCATION/vc $TEST_LOCATION/sec &
+exec $BIN/ck conf $BIN init $TEST_LOCATION/vc $TEST_LOCATION/sec &
 wait $!
 
-if [ ! -f ~/.ck/ckrc ]; then
+if [ ! -f $BIN/ckrc ]; then
     echo -e $ERROR"Config file not created."
     exit 1
 fi
 
-if [ ! -f ~/.ck/ckdb ]; then
+if [ ! -f $BIN/ckdb ]; then
     echo -e $ERROR"DB file not created."
     exit 1
 fi
 
-rm -rf $HOME/.ck
+rm $BIN/ckrc
+rm $BIN/ckdb
 rm -rf $TEST_LOCATION
 echo -e $PASS

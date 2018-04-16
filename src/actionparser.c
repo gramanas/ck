@@ -53,7 +53,7 @@ void getOpt(int position, UserOpt *opt) {
   nextToken();
 
   // allocate memory
-  opt->argv[position] = (char *)malloc((strlen(token)+1)*sizeof(char));
+  opt->argv[position] = (char *)malloc((strlen(token))*sizeof(char) + 1);
   strcpy(opt->argv[position], token);
 }
 
@@ -92,36 +92,36 @@ int parse_ADD(UserOpt *opt) {
 }
 
 int parse_DEL(UserOpt *opt) {
+  return -1;
 }
 int parse_EDIT(UserOpt *opt) {
+  return -1;
 }
 int parse_LIST(UserOpt *opt) {
+  return -1;
 }
 int parse_SEARCH(UserOpt *opt) {
+  return -1;
 }
 int parse_HELP(UserOpt *opt) {
+  return -1;
 }
 
 
 int parseVals(UserOpt *opt) {
   switch (opt->action) {
-#define X(ACTION)                             \
+#define X(ACTION)                                \
     case CKA_##ACTION:                           \
       return parse_##ACTION(opt);
     CK_ACTIONS
 #undef X
-  default:
-    // can't end up here, but it prevents a compiler warning
-    opt->err = PERR_UNKONW_ACTION;
-    return -1;
-    break;
-  }
+      }
   return 1;
 }
 
 CkAction determineAction() {
   int i = 0;
-#define X(ACTION)                                                    \
+#define X(ACTION)                                                       \
   for (i = 1; i < atoi(str##ACTION[0]) + 1; i++) {                      \
     if (strcmp(token, str##ACTION[i]) == 0) {                           \
       return CKA_##ACTION;                                              \
@@ -132,17 +132,28 @@ CkAction determineAction() {
   return -1;
 }
 
-UserOpt initUserOpt() {
-  UserOpt uo;
-  uo.action = -1;
-  uo.err = PERR_NOERR;
-  uo.argc = 0;
+UserOpt make_empty_user_opt() {
+  UserOpt opt;
+  opt.action = -1;
+  opt.err = PERR_NOERR;
+  opt.argc = 0;
+  opt.confDir = NULL;
   for (int i = 0; i < 10; i++) {
-    uo.argv[i] = NULL;
+    opt.argv[i] = NULL;
   }
-  return uo;
+  return opt;
 }
 
+void free_user_opt(UserOpt *opt) {
+  for (int i = 0; i < 10; i++) {
+    if (opt->argv[i] != NULL) {
+      free(opt->argv[i]);
+    }    
+  }
+  if (opt->confDir != NULL) {
+    free(opt->confDir);
+  }
+}
 
 void getConfig(UserOpt *opt) {
   // get first token
@@ -154,19 +165,26 @@ void getConfig(UserOpt *opt) {
         printf("Config needs a value\n");
         exit(1);
       }
+      if (strcmp(token, ".") == 0){
+        printf("Dot\n");
+      }
       struct stat st = {0};
       if (stat(token, &st) == -1) {
         printf("%s is not a directory\n", token);
         exit(1);
       }
-      opt->confDir = malloc(sizeof(token));
+      opt->confDir = malloc(strlen(token) + 1);
       strcpy(opt->confDir, token);
+      // remove trailing `/`
+      if (opt->confDir[strlen(token) - 1] == '/') {
+        opt->confDir[strlen(token) - 1] = '\0';
+      }
       return;
     }
   }
   char * defaultConf = "/.ck";
   char * home = getenv("HOME");
-  opt->confDir = malloc(sizeof(defaultConf)+sizeof(home));
+  opt->confDir = malloc(strlen(defaultConf)+strlen(home)+1);
   strcpy(opt->confDir, home);
   strcat(opt->confDir, defaultConf);
 
@@ -176,7 +194,7 @@ void getConfig(UserOpt *opt) {
 }
 
 ParseResult parseAction(int argc, char* argv[], UserOpt *opt) {
-  *opt = initUserOpt();
+  *opt = make_empty_user_opt();
   if (argc < 2) {
     return OPR_HELP;
   }
@@ -211,29 +229,37 @@ ParseResult parseAction(int argc, char* argv[], UserOpt *opt) {
   }
 }
 
-const char * getPossibleActionName(const char* const strAction[]) {
-  char *names;
-  size_t size = 2; // first chars "{ "
-  for (int i = 1; i < atoi(strAction[0]) + 1; i++) {
-    size += strlen(strAction[i]) + 2; // comma and space for each entry and " }" for the last one
+void getPossibleActionNames(char * dest, CkAction ckAction) {
+  if (ckAction == -1) {
+    dest = NULL;
+    return;
   }
-  if ((names = malloc(size)) != NULL) {
-    strcpy(names, "{ ");
-    int i = 1;
-    for (; i < atoi(strAction[0]); i++) {
-      strcat(names, strAction[i]);
-      strcat(names, ", ");
-    }
-    // last one
-    strcat(names, strAction[atoi(strAction[0])]);
-    strcat(names, " }");
-    return names;
+
+  char buf[30];
+  
+  switch (ckAction) {
+#define X(ACTION)                                         \
+    case CKA_##ACTION:                                    \
+    strcpy(buf, "{ ");                                    \
+    for (int i = 1; i < atoi(str##ACTION[0]); i++) {      \
+      strcat(buf, str##ACTION[i]);                        \
+      strcat(buf, ", ");                                  \
+    }                                                     \
+    strcat(buf, str##ACTION[atoi(str##ACTION[0])]);       \
+    strcat(buf, " }");                                    \
+    break;
+    CK_ACTIONS
+#undef X
   }
-  return NULL;
+
+  strcpy(dest, buf);
 }
 
 void printParserError(UserOpt *opt) {
   char *errStr = NULL;
+  char names[30];
+  getPossibleActionNames(names, opt->action);
+
   switch (opt->err) {
   case PERR_NOERR:
     return;
@@ -241,13 +267,13 @@ void printParserError(UserOpt *opt) {
     asprintf(&errStr, "Unknown action: %s", token);
     break;
   case PERR_INIT_WRONG:
-    asprintf(&errStr, "Initialize database\nUsage: %s version_control_dir secret_dir", getPossibleActionName(strINIT));
+    asprintf(&errStr, "Initialize database\nUsage: %s version_control_dir secret_dir", names);
     break;
   case PERR_ADD_WRONG:
-    asprintf(&errStr, "Add config (new or existing)\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", getPossibleActionName(strADD));
+    asprintf(&errStr, "Add config (new or existing)\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
     break;
   case PERR_DEL_WRONG:
-    asprintf(&errStr, "Delete config or program\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", getPossibleActionName(strDEL));
+    asprintf(&errStr, "Delete config or program\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
     break;
   case PERR_EDIT_WRONG:
     asprintf(&errStr, "Edit config\nUsage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
@@ -263,18 +289,25 @@ void printParserError(UserOpt *opt) {
     break;
   }
   printf("Parsing error\n%s\n", errStr);
-  exit(1);
+  free(errStr);
 }
 
 void printParserHelp() {
-  printf("ck - the config keeper\n"                               );
-  printf("Usage:\n"                                               );
-  printf("Initialize: \t%s\n",      getPossibleActionName(strINIT));
-  printf("Add config: \t%s\n",       getPossibleActionName(strADD));
-  printf("Delete config: \t%s\n",    getPossibleActionName(strDEL));
-  printf("Edit config: \t%s\n",     getPossibleActionName(strEDIT));
-  printf("List configs: \t%s\n",    getPossibleActionName(strLIST));
-  printf("Search: \t%s\n",        getPossibleActionName(strSEARCH));
-  printf("Print this: \t%s\n",      getPossibleActionName(strHELP));
-  exit(0);
+  char names[30];
+  printf("ck - the config keeper\n");
+  printf("Usage:\n");
+  getPossibleActionNames(names, CKA_INIT);
+  printf("Initialize: \t%s\n",      names);
+  getPossibleActionNames(names, CKA_ADD);
+  printf("Add config: \t%s\n",       names);
+  getPossibleActionNames(names, CKA_DEL);
+  printf("Delete config: \t%s\n",    names);
+  getPossibleActionNames(names, CKA_EDIT);
+  printf("Edit config: \t%s\n",     names);
+  getPossibleActionNames(names, CKA_LIST);
+  printf("List configs: \t%s\n",    names);
+  getPossibleActionNames(names, CKA_SEARCH);
+  printf("Search: \t%s\n",        names);
+  getPossibleActionNames(names, CKA_HELP);
+  printf("Print this: \t%s\n",      names);
 }

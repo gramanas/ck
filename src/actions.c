@@ -1,52 +1,24 @@
+/* actions.c - ck actions --------------------------------------*- C -*-
+ *
+ * This file is part of ck, the config keeper
+ *
+ * ------------------------------------------------------------------ */
 #include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "actions.h"
 #include "dblayer.h"
 
-int init_create_config_file(UserOpt *opt) {
-  struct stat st = {0};
-  if (stat("/home/gramanas/.ck", &st)  == -1) {
-    mkdir("/home/gramanas/.ck", 0755);
-  }
-  
-  FILE *f;
-  if ((f = fopen("/home/gramanas/.ck/ckrc", "w")) == NULL) {
-    return 1;
-  }
-  char tmp[200];
-  if (stat(opt->argv[0], &st) == -1) {
-    printf("Version control directory: %s\ndoes not exist.\n", opt->argv[0]);
-    return 1;
-  }
-  strcpy(tmp, "version_control_dir = ");
-  strcat(tmp, opt->argv[0]);
-  strcat(tmp, "\n");
-  fputs(tmp, f);
-  if (stat(opt->argv[1], &st) == -1) {
-    printf("Secret directory: %s\ndoes not exist.\n", opt->argv[1]);
-    return 1;
-  }
-  strcpy(tmp, "secret_dir = ");
-  strcat(tmp, opt->argv[1]);
-  strcat(tmp, "\n");
-  fputs(tmp, f);
-  fclose(f);
-  return 0;
-}
 
 int run_INIT(UserOpt * opt, Conf *conf) {
-  if (db_exists()) {
+  if (db_exists(opt)) {
+    printf("conf dir: %s\n", opt->confDir);
     printf("ck is already initialized.\n");
     return 0;
   }
   if (init_create_config_file(opt)) {
     return 0;
   }
-  DB db = init_make_DB();
+  DB db = init_make_DB(opt);
   if (db.error == SQL_NO_ERR) {
     init_make_tables(&db);
   }

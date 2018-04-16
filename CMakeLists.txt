@@ -1,32 +1,43 @@
 cmake_minimum_required (VERSION 3.5.6)
 project(ck C)
 
+
+set(CMAKE_C_COMPILER clang)
+# gcc flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3")
+
+option(CK_ASAN "Build with asan")
+
+if(CK_ASAN)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+endif(CK_ASAN)
 # Set project directories
-set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
 # Set source code locations
-set(ckBin_src ${PROJECT_SOURCE_DIR}/ck.c)
+set(ckBin_src ${SRC_DIR}/ck.c)
 set(ckLib_src
-  ${PROJECT_SOURCE_DIR}/ck.c
-  ${PROJECT_SOURCE_DIR}/actionparser.c
-  ${PROJECT_SOURCE_DIR}/actions.c
-  ${PROJECT_SOURCE_DIR}/confparser.c
-  ${PROJECT_SOURCE_DIR}/checks.c
-  ${PROJECT_SOURCE_DIR}/dblayer.c
+  ${SRC_DIR}/ck.c
+  ${SRC_DIR}/actionparser.c
+  ${SRC_DIR}/actions.c
+  ${SRC_DIR}/confparser.c
+  ${SRC_DIR}/dblayer.c
 )
 set(ckLib_hdr
-  ${PROJECT_SOURCE_DIR}/actionparser.h
-  ${PROJECT_SOURCE_DIR}/actions.h
-  ${PROJECT_SOURCE_DIR}/confparser.h
-  ${PROJECT_SOURCE_DIR}/checks.h
-  ${PROJECT_SOURCE_DIR}/dblayer.h
+  ${SRC_DIR}/actionparser.h
+  ${SRC_DIR}/actions.h
+  ${SRC_DIR}/confparser.h
+  ${SRC_DIR}/dblayer.h
 )
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${RES_DIR}/cmake)
 
 find_package(SQLite3)
 
 # Include directories
-include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${SRC_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${SQLITE3_INCLUDE_DIRS})
@@ -42,9 +53,10 @@ add_executable(ck ${ckBin_src})
 target_link_libraries (ck ckLib)
 target_link_libraries (ck ${SQLITE3_LIBRARIES})
 
-# copy test file
-set(PROJECT_TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
-set(BIN_TEST_DIR ${CMAKE_BINARY_DIR}/tests)
+# copy test files
+set(BIN_TESTS_DIR ${CMAKE_BINARY_DIR}/res/tests)
 set(PROJECT_TESTING_GROUNDS ${CMAKE_BINARY_DIR}/test_files)
-configure_file(${PROJECT_TEST_DIR}/init ${BIN_TEST_DIR}/init @ONLY)
-configure_file(${PROJECT_TEST_DIR}/check_ck check_ck @ONLY)
+configure_file(${TESTS_DIR}/init ${BIN_TESTS_DIR}/init @ONLY)
+
+# check_ck
+configure_file(${RES_DIR}/check_ck check_ck @ONLY)

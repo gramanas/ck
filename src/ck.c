@@ -11,21 +11,24 @@ int main(int argc, char *argv[]) {
   UserOpt opt;
   switch(parseAction(argc, argv, &opt)) {
   case OPR_HELP:
+    free_user_opt(&opt);
     printParserHelp();
+    return 0;
   case OPR_ERR:
     printParserError(&opt);
+    free_user_opt(&opt);
+    return 1;
   case OPR_OK:
     break;
   }
 
-  printf("%s\n", opt.confDir);
   Conf conf;
   if (opt.action != CKA_INIT) {
-    if (!db_exists()) {
-      printf("ck is not initialized.\nRun ck init first.\n");
+    if (!db_exists(&opt)) {
+      printf("ck is not initialized in %s.\nRun ck init first.\n", opt.confDir);
       return 1;
     }
-    if (!config_file_parse(&conf)) {
+    if (!config_file_parse(&conf, &opt)) {
       return 1;
     }
   }
@@ -48,5 +51,6 @@ int main(int argc, char *argv[]) {
     CK_ACTIONS
 #undef X    
   }
+  free_user_opt(&opt);
   return 0;
 }

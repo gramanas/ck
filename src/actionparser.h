@@ -64,5 +64,6 @@ struct UserOptions {
 extern ParseResult parseAction(int argc, char* argv[], UserOpt *opt);
 extern void printParserError();
 extern void printParserHelp();
+extern void free_user_opt(UserOpt *opt);
 
 #endif // ACTIONPARSER_H
