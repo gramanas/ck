@@ -1,5 +1,5 @@
 #!/bin/bash
-BIN=/build/ck
+BIN=@CMAKE_BINARY_DIR@
 
 TEST_LOCATION=@PROJECT_TESTING_GROUNDS@
 mkdir -p $TEST_LOCATION/vc

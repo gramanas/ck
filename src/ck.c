@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-
   /* Run action and print results */
   switch(opt.action) {
 #define X(ACTION)                                               \
