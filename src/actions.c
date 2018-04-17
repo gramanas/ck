@@ -28,7 +28,7 @@ int run_INIT(UserOpt * opt, Conf *conf) {
 
 int run_ADD(UserOpt * opt, Conf *conf) {
   printf("Running %s\n", "add");
-  DB db = open_DB();
+  DB db = open_DB(opt);
   if (db.ptr == NULL) {
     if (db.error == SQL_ERR_NO_TABLES) {
       printf("no tables\n");
@@ -37,6 +37,7 @@ int run_ADD(UserOpt * opt, Conf *conf) {
   for (int i = 0; i < opt->argc; i++) {
     printf("[%d]: %s\n", i, opt->argv[i]);
   }
+  close_DB(&db);
   return 0;
 }
 

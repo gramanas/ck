@@ -35,4 +35,6 @@ extern void close_DB(DB *DB);
 extern void init_make_tables(DB *db);
 extern DB init_make_DB();
 
+/* add */
+extern int add_insert_program_to_db(DB *db, char * name);
 #endif /* DBLAEYR_H */

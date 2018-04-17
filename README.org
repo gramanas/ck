@@ -1,3 +1,4 @@
+#+html: <p align="center"><img src="res/logo.png" width="30%" height="30%" /></p>
 * ck
 *The Config Keeper*
 

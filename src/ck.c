@@ -26,30 +26,24 @@ int main(int argc, char *argv[]) {
   if (opt.action != CKA_INIT) {
     if (!db_exists(&opt)) {
       printf("ck is not initialized in %s.\nRun ck init first.\n", opt.confDir);
+      free_user_opt(&opt);
       return 1;
     }
     if (!config_file_parse(&conf, &opt)) {
+      free_user_opt(&opt);
       return 1;
     }
   }
 
-  int ok;
+
+  /* Run action and print results */
   switch(opt.action) {
-#define X(ACTION)                               \
-    case CKA_##ACTION:                          \
-      ok = run_##ACTION(&opt, &conf);           \
+#define X(ACTION)                                               \
+    case CKA_##ACTION:                                          \
+      print_##ACTION##_result(run_##ACTION(&opt, &conf));       \
       break;
     CK_ACTIONS
 #undef X
-  }
-
-  switch(opt.action) {
-#define X(ACTION)                                       \
-    case CKA_##ACTION:                                  \
-      print_##ACTION##_result(ok);                      \
-      break;
-    CK_ACTIONS
-#undef X    
   }
   free_user_opt(&opt);
   return 0;

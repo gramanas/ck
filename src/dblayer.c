@@ -12,7 +12,7 @@
 
 const char * const DB_NAME = "/ckdb";
 
-char *make_db_name(char * confPath) {
+char *make_db_name(char *confPath) {
   char *db_path = strdup(confPath);
   
   db_path = realloc(db_path, strlen(confPath)+strlen(DB_NAME)+1);
@@ -34,7 +34,7 @@ int db_exists(UserOpt *opt) {
 
 // check if db has the correct tables
 int check_initialized_DB(sqlite3 *db) {
-  char *sql = "SELECT * FROM SQLITE_MASTER;";
+  char *sql = "SELECT * FROM SQLITE_MASTER WHERE type='table';";
   sqlite3_stmt *stmt;
 
   int rc = sqlite3_prepare_v2(db, sql, strlen(sql), &stmt, NULL);
@@ -109,17 +109,18 @@ DB open_DB(UserOpt *opt) {
 }
 
 void init_make_tables(DB *db) {
-  char * sql = "CREATE TABLE REL("
-    "pId INT    NOT NULL,"
-    "cId INT    NOT NULL);"
+  char * sql =
+    "CREATE TABLE REL("
+    "pId INT NOT NULL,"
+    "cId INT NOT NULL);"
     "CREATE TABLE PROGRAM("
-    "id INT PRIMARY KEY     NOT NULL,"
-    "name           TEXT    NOT NULL);"
+    "id   INT  NOT NULL PRIMARY KEY,"
+    "name TEXT NOT NULL);"
     "CREATE TABLE CONFIG("
-    "id INT PRIMARY KEY     NOT NULL,"
-    "path           TEXT    NOT NULL,"
-    "secret         INT     NOT NULL,"
-    "prime          INT     NOT NULL);";
+    "id     INT  NOT NULL PRIMARY KEY,"
+    "path   TEXT NOT NULL,"
+    "secret INT  NOT NULL,"
+    "prime  INT  NOT NULL);";
 
   char *err_msg = NULL;
   int rc = sqlite3_exec(db->ptr, sql, 0, 0, &err_msg);
@@ -129,4 +130,8 @@ void init_make_tables(DB *db) {
     db->error = SQL_ERR_SQLITE;
     return;
   }
+}
+
+int add_insert_program_to_db(DB *db, char* name) {
+  return 0;
 }

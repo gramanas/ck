@@ -26,15 +26,13 @@ int remove_newline(char buff[]) {
   return strlen(buff);
 }
 
-char* read_next_line(FILE *f) {
+int read_next_line(char *line, FILE *f) {
   char nextLine[200];
-  char *line;
   if (fgets(nextLine, 200, f) == NULL) {
-    return NULL;
+    return -1;
   }
-  line = malloc(remove_newline(nextLine));
   strcpy(line, nextLine);
-  return line;
+  return 0;
 }
 
 int is_empty(const char *s) {
@@ -88,9 +86,9 @@ ConfigParserResult parse(Conf *conf, UserOpt *opt) {
   }
   free(confName);
   int flag = 1;
-  char *line = read_next_line(confPtr);
+  char line[200];
   char matched[200];
-  while (line != NULL) {
+  while (read_next_line(line, confPtr)) {
     switch(match_variables(line, matched)) {
 #define X(var, str, name)                       \
       case CV_##var:                            \
@@ -108,8 +106,6 @@ ConfigParserResult parse(Conf *conf, UserOpt *opt) {
     default:
       printf("%s:\n%s\n", "Config error in line", line);
     }
-    free(line);
-    line=read_next_line(confPtr);
   }
 #define X(var, str)                               \
   if (conf->var == NULL) {                        \
