@@ -34,8 +34,8 @@ int remove_newline(char buff[]) {
 }
 
 int read_next_line(char *line, FILE *f) {
-  char nextLine[200];
-  if (fgets(nextLine, 200, f) == NULL) {
+  char nextLine[STR_L];
+  if (fgets(nextLine, STR_L, f) == NULL) {
     return -1;
   }
   strcpy(line, nextLine);
@@ -55,29 +55,27 @@ ConfVar match_variables(char *line, char matched[]) {
   return -1;
 }
 
-char *make_config_name(char * confPath) {
-  char *db_path = strdup(confPath);
+void make_config_name(char * ret, const char *confPath) {
+  char tmp[STR_L];
+  strcpy(tmp, confPath);
+  strcat(tmp, CONFIG_NAME);
 
-  db_path = realloc(db_path, strlen(confPath) + strlen(CONFIG_NAME)+1);
-  strcat(db_path, CONFIG_NAME);
-
-  return db_path;
+  strcpy(ret, tmp);
 }
 
 ConfigParserResult parse(Conf *conf, UserOpt *opt) {
   conf_values_initialize(conf);
   FILE *confPtr;
-  char *confName = make_config_name(opt->confDir);
+  char confName[STR_L];
+  make_config_name(confName, opt->confDir);
   if ((confPtr = fopen(confName, "r")) == NULL) {
-    free(confName);
     return CPR_NO_CONFIG_FILE;
   }
-  free(confName);
   int flag = 1;
-  char line[200];
-  char matched[200];
+  char line[STR_L];
+  char matched[STR_L];
   while (read_next_line(line, confPtr)) {
-    if (strlen(line) > 200) {
+    if (strlen(line) > STR_L) {
       return CPR_WRONG_CONFIG;
     }
     switch(match_variables(line, matched)) {
@@ -146,10 +144,10 @@ int init_create_config_file(UserOpt *opt) {
     util_mkdir(opt->confDir);
   }
 
-  char *confName = make_config_name(opt->confDir);
+  char confName[STR_L];
+  make_config_name(confName, opt->confDir);
   FILE *f;
   if ((f = fopen(confName, "w")) == NULL) {
-    free(confName);
     return 1;
   }
   
@@ -164,6 +162,5 @@ int init_create_config_file(UserOpt *opt) {
   fputs(tmp, f);
   fclose(f);
 
-  free(confName);
   return 0;
 }

@@ -24,7 +24,8 @@ enum SqlErrors {
   SQL_NO_ERR = 0,
   SQL_ERR_NO_DB_FILE,
   SQL_ERR_NO_TABLES,
-  SQL_ERR_SQLITE
+  SQL_ERR_SQLITE,
+  SQL_CONFIG_PATH_EXISTS
 };
 
 typedef struct DBstruct DB;
@@ -53,5 +54,9 @@ extern DB init_make_DB(const UserOpt *opt);
 /* add */
 /*******/
 
+extern int add_transaction_begin(DB *db, const char *progName,
+                                 const char* confPath, const int secret,
+                                 const int prime);
 extern int add_insert_program_to_db(DB *db, const char * name);
-#endif /* DBLAEYR_H */
+extern int add_insert_config_to_db(DB *db, const int pid, const char *path, const int secret, const int prime);
+#endif /* DBLAYER_H */

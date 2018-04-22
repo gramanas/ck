@@ -13,11 +13,6 @@
  * and report any errors that might come up.
  *
  * -------------------------------------------------------------------------- */
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "actionparser.h"
 #include "ckutil.h"
 
@@ -243,7 +238,7 @@ void getPossibleActionNames(char * dest, CkAction ckAction) {
     return;
   }
 
-  char buf[30];
+  char buf[STR_S];
   
   switch (ckAction) {
 #define X(ACTION)                                         \
@@ -266,44 +261,43 @@ void getPossibleActionNames(char * dest, CkAction ckAction) {
 }
 
 void printParserError(UserOpt *opt) {
-  char *errStr = NULL;
-  char names[30];
+  char errStr[STR_M];
+  char names[STR_S];
   getPossibleActionNames(names, opt->action);
 
   switch (opt->err) {
   case PERR_NOERR:
     return;
   case PERR_UNKONW_ACTION:
-    asprintf(&errStr, "Unknown action: %s", token);
+    sprintf(errStr, "Unknown action: %s", token);
     break;
   case PERR_INIT_WRONG:
-    asprintf(&errStr, "Initialize database\nUsage: %s version_control_dir secret_dir", names);
+    sprintf(errStr, "Initialize database\nUsage: %s version_control_dir secret_dir", names);
     break;
   case PERR_ADD_WRONG:
-    asprintf(&errStr, "Add config (new or existing)\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
+    sprintf(errStr, "Add config (new or existing)\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
     break;
   case PERR_DEL_WRONG:
-    asprintf(&errStr, "Delete config or program\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
+    sprintf(errStr, "Delete config or program\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
     break;
   case PERR_EDIT_WRONG:
-    asprintf(&errStr, "Edit config\nUsage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
+    sprintf(errStr, "Edit config\nUsage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
     break;
   case PERR_LIST_WRONG:
-    asprintf(&errStr, "Usage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
+    sprintf(errStr, "Usage: .........)");
     break;
   case PERR_SEARCH_WRONG:
-    asprintf(&errStr, "Usage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
+    sprintf(errStr, "Usage: .............");
     break;
   case PERR_HELP_WRONG:
-    asprintf(&errStr, "Usage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
+    sprintf(errStr, "Usage: ........");
     break;
   }
   printf("Parsing error\n%s\n", errStr);
-  free(errStr);
 }
 
 void printParserHelp() {
-  char names[30];
+  char names[STR_S];
   printf("ck - the config keeper\n");
   printf("Usage:\n");
   getPossibleActionNames(names, CKA_INIT);

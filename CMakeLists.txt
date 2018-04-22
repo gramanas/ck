@@ -24,6 +24,7 @@ set(ckLib_src
   ${SRC_DIR}/actions.c
   ${SRC_DIR}/confparser.c
   ${SRC_DIR}/dblayer.c
+  ${SRC_DIR}/dbhelper.c
   ${SRC_DIR}/ckutil.c
 )
 set(ckLib_hdr
@@ -31,6 +32,7 @@ set(ckLib_hdr
   ${SRC_DIR}/actions.h
   ${SRC_DIR}/confparser.h
   ${SRC_DIR}/dblayer.h
+  ${SRC_DIR}/dbhelper.h
   ${SRC_DIR}/ckutil.h
 )
 

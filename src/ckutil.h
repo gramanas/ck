@@ -7,9 +7,38 @@
  * Copyright (C) 2018  Anastasis Grammenos
  * GPLv3 (see LICENCE for the full notice)
  *
+ * -----------------------------------------------------------------------------
+ *
+ * Utility funtions and global constants.
+ *
  * -------------------------------------------------------------------------- */
 #ifndef CKUTIL_H
 #define CKUTIL_H
+
+/*******************/
+/* global includes */
+/*******************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/********************/
+/* global constants */
+/********************/
+
+/* String length - Small */
+#define STR_S 30
+
+/* String length -Medium */
+#define STR_M 100
+
+/* String length - Large */
+#define STR_L 400
+
+/*********************/
+/* utility functions */
+/*********************/
 
 /* Returns 1 if path is a directory, else returns 0. */
 extern int util_is_dir(const char *path);

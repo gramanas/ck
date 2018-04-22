@@ -42,9 +42,12 @@ int run_ADD(UserOpt * opt, Conf *conf) {
   for (int i = 0; i < opt->argc; i++) {
     printf("[%d]: %s\n", i, opt->argv[i]);
   }
-  add_insert_program_to_db(&db, opt->argv[1]);
+  // figure out user opt
+  if (add_transaction_begin(&db, opt->argv[0], opt->argv[1], 0, 0) == 0) {
+    return 0;
+  }
   close_DB(&db);
-  return 0;
+  return 1;
 }
 
 int run_DEL(UserOpt * opt, Conf *conf) {
@@ -59,6 +62,16 @@ int run_EDIT(UserOpt * opt, Conf *conf) {
 
 int run_LIST(UserOpt * opt, Conf *conf) {
   printf("Running %s\n", "list");
+  DB db = open_DB(opt);
+  if (db.ptr == NULL) {
+    if (db.error == SQL_ERR_NO_TABLES) {
+      printf("no tables\n");
+    }
+  }
+  for (int i = 0; i < opt->argc; i++) {
+    printf("[%d]: %s\n", i, opt->argv[i]);
+  }
+  close_DB(&db);
   return 0;
 }
 
