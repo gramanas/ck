@@ -42,6 +42,7 @@ int run_ADD(UserOpt * opt, Conf *conf) {
   for (int i = 0; i < opt->argc; i++) {
     printf("[%d]: %s\n", i, opt->argv[i]);
   }
+  add_insert_program_to_db(&db, opt->argv[1]);
   close_DB(&db);
   return 0;
 }

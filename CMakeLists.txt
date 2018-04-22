@@ -24,12 +24,14 @@ set(ckLib_src
   ${SRC_DIR}/actions.c
   ${SRC_DIR}/confparser.c
   ${SRC_DIR}/dblayer.c
+  ${SRC_DIR}/ckutil.c
 )
 set(ckLib_hdr
   ${SRC_DIR}/actionparser.h
   ${SRC_DIR}/actions.h
   ${SRC_DIR}/confparser.h
   ${SRC_DIR}/dblayer.h
+  ${SRC_DIR}/ckutil.h
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${RES_DIR}/cmake)

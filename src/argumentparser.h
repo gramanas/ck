@@ -1,17 +1,4 @@
-/* argumentparser.h - Argument parser for ck------------------------*- C -*-
- *
- * This file is part of ck, the config keeper
- *
- * ---------------------------------------------------------------------
- *
- * The code here and in argumentparser.c is responsible for parsing 
- * the user's input from the command line 
- *
- * Keeps track of what error occured where and provides
- * printParserHelp() and printParserError() functions
- * to notify the user
- *
- * ------------------------------------------------------------------ */
+/* argumentparser.h - Argument parser for ck------------------------*- C -*- */
 #ifndef ARGUMENTPARSER_H
 #define ARGUMENTPARSER_H
 #define INIT_ALIAS                              \

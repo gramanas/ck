@@ -33,14 +33,25 @@ struct DBstruct {
   SqlError error;
 };
 
-extern int db_exists(UserOpt *opt);
-extern DB open_DB();
+extern int db_exists(const UserOpt *opt);
+
+/* Open the db file. On fail return null pointer to db 
+ * and the corresponding SQL error (NO_DB_FILE | NO_TABLES)*/
+extern DB open_DB(const UserOpt *opt);
+
 extern void close_DB(DB *DB);
 
+/********/
 /* init */
-extern void init_make_tables(DB *db);
-extern DB init_make_DB();
+/********/
 
+/* Create the tables required for the ckdb */
+extern void init_make_tables(DB *db);
+extern DB init_make_DB(const UserOpt *opt);
+
+/*******/
 /* add */
-extern int add_insert_program_to_db(DB *db, char * name);
+/*******/
+
+extern int add_insert_program_to_db(DB *db, const char * name);
 #endif /* DBLAEYR_H */

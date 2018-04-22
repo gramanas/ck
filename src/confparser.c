@@ -11,11 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+
+#include "ckutil.h"
 #include "confparser.h"
 
 
@@ -45,17 +42,8 @@ int read_next_line(char *line, FILE *f) {
   return 0;
 }
 
-int is_empty(const char *s) {
-  while (*s != '\0') {
-    if (!isspace((unsigned char)*s))
-      return 0;
-    s++;
-  }
-  return 1;
-}
-
 ConfVar match_variables(char *line, char matched[]) {
-  if (line[0] == '#' || is_empty(line)) {
+  if (line[0] == '#' || util_is_str_empty(line)) {
     return CV_NO_VAL_OR_COMMENT;
   }
 #define X(var, str, name)                        \
@@ -65,16 +53,6 @@ ConfVar match_variables(char *line, char matched[]) {
   CONFIG_VARIABLES_TABLE
 #undef X
   return -1;
-}
-
-int is_dir(char *path) {
-  DIR *dir;
-  dir = opendir(path);
-  if (!dir) {
-    return 0;
-  }
-  closedir(dir);
-  return 1;
 }
 
 char *make_config_name(char * confPath) {
@@ -99,12 +77,15 @@ ConfigParserResult parse(Conf *conf, UserOpt *opt) {
   char line[200];
   char matched[200];
   while (read_next_line(line, confPtr)) {
+    if (strlen(line) > 200) {
+      return CPR_WRONG_CONFIG;
+    }
     switch(match_variables(line, matched)) {
 #define X(var, str, name)                       \
       case CV_##var:                            \
         conf->var = malloc(strlen(matched)+1);  \
         strcpy(conf->var, matched);             \
-        if (!is_dir(matched)) {                 \
+        if (!util_is_dir(matched)) {            \
           free(conf->var);                      \
           return CPR_WRONG_##var;               \
         }                                       \
@@ -150,20 +131,19 @@ int config_file_parse(Conf *conf, UserOpt *opt) {
 }
 
 int init_create_config_file(UserOpt *opt) {
-  struct stat st = {0};
   char tmp[200];
-  if (stat(opt->argv[0], &st) == -1) {
+  if (!util_file_exists(opt->argv[0])) {
     printf("Version control directory: %s\ndoes not exist.\n", opt->argv[0]);
     return 1;
   }
 
-  if (stat(opt->argv[1], &st) == -1) {
+  if (!util_file_exists(opt->argv[1])) {
     printf("Secret directory: %s\ndoes not exist.\n", opt->argv[1]);
     return 1;
   }
   
-  if (stat(opt->confDir, &st)  == -1) {
-    mkdir(opt->confDir, 0755);
+  if (!util_file_exists(opt->confDir)) {
+    util_mkdir(opt->confDir);
   }
 
   char *confName = make_config_name(opt->confDir);

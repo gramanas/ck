@@ -73,6 +73,8 @@ int main(int argc, char *argv[]) {
       break;
     CK_ACTIONS
 #undef X
+  default:
+    break;
   }
   free_user_opt(&opt);
   return 0;

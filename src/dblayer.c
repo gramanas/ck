@@ -15,33 +15,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "dblayer.h"
+#include "ckutil.h"
 
 const char * const DB_NAME = "/ckdb";
 
-char *make_db_name(char *confPath) {
-  char *db_path = strdup(confPath);
-  
-  db_path = realloc(db_path, strlen(confPath)+strlen(DB_NAME)+1);
+/* figure out the database name */
+void make_db_name(char *ret, const char *confPath) {
+  char db_path[200];
+  strcpy(db_path, confPath);
   strcat(db_path, DB_NAME);
 
-  return db_path;
+  strcpy(ret, db_path);
 }
 
-int db_exists(UserOpt *opt) {
-  char *db_path = make_db_name(opt->confDir);
-  int ret;
-  ret = 0;
-  if (access(db_path, F_OK) == 0) {
-    ret = 1;
-  }
-  free(db_path);
-  return ret;
+/* Check if the db file exists*/
+int db_exists(const UserOpt *opt) {
+  char db_path[200];
+  make_db_name(db_path, opt->confDir);
+  return util_is_file_rw(db_path);
 }
 
-// check if db has the correct tables
+/* check if db has the correct tables */
 int check_initialized_DB(sqlite3 *db) {
   char *sql = "SELECT * FROM SQLITE_MASTER WHERE type='table';";
   sqlite3_stmt *stmt;
@@ -84,13 +80,13 @@ void close_DB(DB *db) {
   sqlite3_close(db->ptr);
 }
 
-DB init_make_DB(UserOpt *opt) {
+DB init_make_DB(const UserOpt *opt) {
   sqlite3 *db;
+  char db_path[200];
   int rc;
 
-  char *db_path = make_db_name(opt->confDir);
+  make_db_name(db_path, opt->confDir);
   rc = sqlite3_open(db_path, &db);
-  free(db_path);
   if (rc != SQLITE_OK) {
     return empty_DB(SQL_ERR_NO_DB_FILE);
   }
@@ -98,13 +94,13 @@ DB init_make_DB(UserOpt *opt) {
   return new_DB(db);
 }
 
-DB open_DB(UserOpt *opt) {
+DB open_DB(const UserOpt *opt) {
   sqlite3 *db;
   int rc;
+  char db_path[200];
 
-  char *db_path = make_db_name(opt->confDir);  
+  make_db_name(db_path, opt->confDir);  
   rc = sqlite3_open(db_path, &db);
-  free(db_path);
 
   if (rc) {
     return empty_DB(SQL_ERR_NO_DB_FILE);
@@ -141,6 +137,59 @@ void init_make_tables(DB *db) {
   }
 }
 
-int add_insert_program_to_db(DB *db, char* name) {
+int get_next_valid_id_from_table(DB *db, const char* tableName) {
+  sqlite3_stmt *stmt;
+  int rc;
+
+  char sql[100] = "SELECT id FROM ";
+  strcat(sql, tableName);
+  strcat(sql, " ORDER BY id;");
+
+  rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    return -1;
+  }
+  sqlite3_bind_text(stmt, 1, tableName, strlen(tableName), 0);
+
+  int id = 0;
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int a = sqlite3_column_int(stmt, 0);
+    if (a != id) {
+      break;
+    }
+    id++;
+  }
+  sqlite3_finalize(stmt);
+  return id;
+}
+
+void insert_to_program_table(DB *db, const char *name) {
+  sqlite3_stmt *stmt;
+  int rc;
+
+  char * sql =
+    "INSERT INTO PROGRAM VALUES(?, ?);";
+
+  rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    printf("Error\n");
+    return;
+  }
+  int id = get_next_valid_id_from_table(db, "PROGRAM");
+  if (id == -1) {
+    db->error = SQL_ERR_SQLITE;
+    return;
+  }
+  sqlite3_bind_int(stmt, 1, id);
+  sqlite3_bind_text(stmt, 2, name, strlen(name), 0);
+  if (sqlite3_step(stmt) != SQLITE_DONE) {
+    printf("Error\n");
+    return;
+  }
+  sqlite3_finalize(stmt);
+}
+
+int add_insert_program_to_db(DB *db, const char *name) {
+  insert_to_program_table(db,name);
   return 0;
 }

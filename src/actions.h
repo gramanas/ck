@@ -23,7 +23,7 @@
 CK_ACTIONS
 #undef X
 
-#define X(ACTION)                                               \
+#define X(ACTION)                               \
   extern void print_##ACTION##_result(int ok);
 CK_ACTIONS
 #undef X

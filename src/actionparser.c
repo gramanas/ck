@@ -17,11 +17,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "actionparser.h"
+#include "ckutil.h"
 
 /* accepted commands */
 /* [0] is the count */
@@ -125,8 +123,9 @@ int parseVals(UserOpt *opt) {
       return parse_##ACTION(opt);
     CK_ACTIONS
 #undef X
-      }
-  return 1;
+  default:
+    return -1;
+  }
 }
 
 CkAction determineAction() {
@@ -139,7 +138,7 @@ CkAction determineAction() {
   }
   CK_ACTIONS
 #undef X
-  return -1;
+  return CK_WRONG_ACTION;
 }
 
 UserOpt make_empty_user_opt() {
@@ -178,8 +177,7 @@ void getConfig(UserOpt *opt) {
       if (strcmp(token, ".") == 0){
         printf("Dot\n");
       }
-      struct stat st = {0};
-      if (stat(token, &st) == -1) {
+      if (!util_is_dir(token)) {
         printf("%s is not a directory\n", token);
         exit(1);
       }
@@ -218,7 +216,7 @@ ParseResult parseAction(int argc, char* argv[], UserOpt *opt) {
   // get action
   nextToken();
   opt->action = determineAction();
-  if (opt->action == -1) {
+  if (opt->action == CK_WRONG_ACTION) {
     opt->err = PERR_UNKONW_ACTION;
     return OPR_ERR;
   }
@@ -260,6 +258,8 @@ void getPossibleActionNames(char * dest, CkAction ckAction) {
     break;
     CK_ACTIONS
 #undef X
+  default:
+    break;    
   }
 
   strcpy(dest, buf);

@@ -43,6 +43,7 @@ enum ParseErrors {
 
 typedef enum CkActions CkAction;
 enum CkActions {
+  CK_WRONG_ACTION,
 #define X(ACTION)                               \
   CKA_##ACTION,
   CK_ACTIONS
