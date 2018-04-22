@@ -1,8 +1,13 @@
-/* actionparser.h - Action parser for ck------------------------*- C -*-
+/* actionparser.h - Action parser for ck -------------------------------*- C -*-
  *
  * This file is part of ck, the config keeper
  *
- * ---------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2018  Anastasis Grammenos
+ * GPLv3 (see LICENCE for the full notice)
+ *
+ * -----------------------------------------------------------------------------
  *
  * The code here and in actionparser.c is responsible for parsing 
  * the user's input from the command line and return a struct
@@ -13,7 +18,7 @@
  * printParserHelp() and printParserError() functions
  * to notify the user
  *
- * ------------------------------------------------------------------ */
+ * -------------------------------------------------------------------------- */
 #ifndef ACTIONPARSER_H
 #define ACTIONPARSER_H
 

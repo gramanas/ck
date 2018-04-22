@@ -1,3 +1,18 @@
+/* actionparser.c - Action parser for ck -------------------------------*- C -*-
+ *
+ * This file is part of ck, the config keeper
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2018  Anastasis Grammenos
+ * GPLv3 (see LICENCE for the full notice)
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * The following code is resposinble for parsing the command line arguments
+ * and report any errors that might come up.
+ *
+ * -------------------------------------------------------------------------- */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,11 +22,6 @@
 #include <unistd.h>
 
 #include "actionparser.h"
-
-/* --------------------------------------------------------------------------
- * The following code is resposinble for parsing the command line arguments
- * and report any errors that might come up.
- * -------------------------------------------------------------------------- */
 
 /* accepted commands */
 /* [0] is the count */

@@ -1,11 +1,18 @@
-/* confparser.h - Configuration file parser for ck -------------*- C -*-
+/* confparser.h - Configuration file parser for ck ---------------------*- C -*-
  *
  * This file is part of ck, the config keeper
  * 
- * ---------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2018  Anastasis Grammenos
+ * GPLv3 (see LICENCE for the full notice)
+ *
+ * -----------------------------------------------------------------------------
+ *
  * The code here and in confparser.c is responsible parsing
  * the configuration and get the values set there
- * ------------------------------------------------------------------ */
+ *
+ * -------------------------------------------------------------------------- */
 #ifndef CONFPARSER_H
 #define CONFPARSER_H
 
