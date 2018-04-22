@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PRINT_ERR(ERROR)                             \
+  printf("--[ Error ]--\n%s", ERROR);
+
 /********************/
 /* global constants */
 /********************/

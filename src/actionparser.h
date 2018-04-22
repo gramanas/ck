@@ -66,7 +66,6 @@ struct UserOptions {
   char *argv[10]; // action's options
 };
 
-
 extern ParseResult parseAction(int argc, char* argv[], UserOpt *opt);
 extern void printParserError();
 extern void printParserHelp();

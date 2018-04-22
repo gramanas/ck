@@ -28,4 +28,19 @@ CK_ACTIONS
 CK_ACTIONS
 #undef X
 
+typedef enum AddOptErrors AddOptErr;
+enum AddOptErrors {
+  ADD_NO_ERR = 0,
+  ADD_ERR_WRONG_CONFIG,
+  ADD_ERR_WRONG_FLAGS
+};
+
+typedef struct AddOptions AddOpt;
+struct AddOptions {
+  char *progName;
+  char *confPath;
+  int secret;
+  int prime;
+  AddOptErr err;
+};
 #endif /* ACTIONS_H */

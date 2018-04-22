@@ -115,11 +115,9 @@ void init_make_tables(DB *db) {
   char sql[STR_L];
   dbh_form_query_make_tables(sql);
 
-  char *err_msg = NULL;
-  int rc = sqlite3_exec(db->ptr, sql, 0, 0, &err_msg);
+  int rc = sqlite3_exec(db->ptr, sql, 0, 0, 0);
   if (rc != SQLITE_OK ) {
-    printf("SQL error: %s\n", err_msg);
-    sqlite3_free(err_msg);
+    PRINT_ERR("Could not create empry db.");
     db->error = SQL_ERR_SQLITE;
     return;
   }
@@ -159,7 +157,7 @@ int insert_to_program_table(DB *db, const char *name) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    printf("Error while preparing insert to program sql.\n");
+    PRINT_ERR("while preparing insert to program sql.\n");
     db->error = SQL_ERR_SQLITE;    
     return -1;
   }
@@ -171,7 +169,7 @@ int insert_to_program_table(DB *db, const char *name) {
   sqlite3_bind_int(stmt, 1, id);
   sqlite3_bind_text(stmt, 2, name, strlen(name), 0);
   if (sqlite3_step(stmt) != SQLITE_DONE) {
-    printf("Error while excecuting insert to program sql.\n");
+    PRINT_ERR("while excecuting insert to program sql.\n");
     db->error = SQL_ERR_SQLITE;
     return -1;
   }
@@ -187,7 +185,7 @@ int insert_to_config_table(DB *db, const char *path, const int secret, const int
   dbh_form_query_insert_config(sql);
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    printf("Error while preparing insert to config sql.\n");
+    PRINT_ERR("Error while preparing insert to config sql.\n");
     db->error = SQL_ERR_SQLITE;
     return -1;
   }
@@ -201,7 +199,7 @@ int insert_to_config_table(DB *db, const char *path, const int secret, const int
   sqlite3_bind_int(stmt, 3, secret);
   sqlite3_bind_int(stmt, 4, prime);
   if (sqlite3_step(stmt) != SQLITE_DONE) {
-    printf("Error while excecuting insert to config sql.\n");
+    PRINT_ERR("Error while excecuting insert to config sql.\n");
     db->error = SQL_ERR_SQLITE;
     return-1;
   }
@@ -218,14 +216,14 @@ int insert_to_rel_table(DB *db, const int pid, const int cid) {
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
     db->error = SQL_ERR_SQLITE; 
-    printf("Error while preparing insert to rel sql.\n");
+    PRINT_ERR("while preparing insert to rel sql.\n");
     return -1;
   }
   sqlite3_bind_int(stmt, 1, pid);
   sqlite3_bind_int(stmt, 2, cid);
   if (sqlite3_step(stmt) != SQLITE_DONE) {
     db->error = SQL_ERR_SQLITE; 
-    printf("Error while excecuting insert to rel sql.\n");
+    PRINT_ERR("while excecuting insert to rel sql.\n");
     return-1;
   }
   sqlite3_finalize(stmt);
@@ -241,7 +239,7 @@ int program_exists(DB *db, const char* name) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    printf("Error while preparing program_exists sql.\n");
+    PRINT_ERR("Error while preparing program_exists sql.\n");
     return -2;
   }
   sqlite3_bind_text(stmt, 1, name, strlen(name), 0);
@@ -263,7 +261,7 @@ int config_exists(DB *db, const int pid, const char* path) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    printf("Error while preparing config_exists sql.\n");
+    PRINT_ERR("while preparing config_exists sql.\n");
     return -2;
   }
   sqlite3_bind_text(stmt, 1, path, strlen(path), 0);
@@ -281,6 +279,35 @@ int add_insert_relationship(DB *db, const int pid, const int cid) {
   return insert_to_rel_table(db, pid, cid);
 }
 
+int program_has_primary_config(DB *db, const int pid) {
+  sqlite3_stmt *stmt;
+  int rc;
+
+  char sql[STR_L];
+
+  char condition[STR_S] = TBL_PROGRAM;
+  strcat(condition, ".");
+  strcat(condition, COL_PROGRAM_ID);
+
+  dbh_format_query_select_from_joined_eq(sql, COL_CONFIG_PRIMARY, condition);
+
+  rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    PRINT_ERR("while preparing program_has_primary_exists sql.\n");
+    return -2;
+  }
+  sqlite3_bind_int(stmt, 1, pid);
+  int count = 0;
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    count += sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  if (count == 0) {
+    return 0;
+  }
+  return 1;
+}
+
 int add_get_or_insert_config_to_db(DB *db, const int pid, const char *path, const int secret, const int prime) {
   int cid = config_exists(db, pid, path);
   if (cid == -2) {
@@ -289,6 +316,10 @@ int add_get_or_insert_config_to_db(DB *db, const int pid, const char *path, cons
   }
   /* If config doesnt exist insert it and return it's cid */
   if (cid == -1) {
+    if (program_has_primary_config(db, pid) && prime) {
+      db->error = SQL_ERR_PRIMARY_REDEFINITION;
+      return -1;
+    }
     return insert_to_config_table(db, path, secret, prime);
   }
 
@@ -315,24 +346,29 @@ int add_transaction_begin(DB *db, const char *progName,
   __BEGIN_TRANSACTION__
   int pid = add_get_or_insert_program_to_db(db, progName);
   if (db->error == SQL_ERR_SQLITE) {
-    printf("Could not insert program to db.\n");
+    PRINT_ERR("Could not insert program to db.\n");
     close_DB(db);
     return 0;
   }
   int cid = add_get_or_insert_config_to_db(db, pid, confPath, secret, prime);
   if (db->error == SQL_ERR_SQLITE) {
-    printf("Could not insert config to db.\n");
+    PRINT_ERR("Could not insert config to db.\n");
     close_DB(db);
     return 0;
   }
   else if (db->error == SQL_CONFIG_PATH_EXISTS) {
-    printf("This config already exists in the database.\n");
+    PRINT_ERR("This config already exists in the database.\n");
+    close_DB(db);
+    return 0;
+  }
+  else if (db->error == SQL_ERR_PRIMARY_REDEFINITION) {
+    PRINT_ERR("This program already has a primary config.\n");
     close_DB(db);
     return 0;
   }
   add_insert_relationship(db, pid, cid);
   if (db->error == SQL_ERR_SQLITE) {
-    printf("Could not insert config to db.\n");
+    PRINT_ERR("rel update failed\n");
     close_DB(db);
     return 0;
   }

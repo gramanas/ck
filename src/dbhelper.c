@@ -1,3 +1,13 @@
+/* dbhelper.c - Database layer for ck -----------------------------------*- C -*-
+ *
+ * This file is part of ck, the config keeper
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2018  Anastasis Grammenos
+ * GPLv3 (see LICENCE for the full notice)
+ *
+ * -------------------------------------------------------------------------- */
 #include "dbhelper.h"
 
 void dbh_form_query_make_tables(char *query) {
@@ -18,7 +28,7 @@ void dbh_form_query_make_tables(char *query) {
   strcat(tmp, " TEXT NOT NULL, ");
   strcat(tmp, COL_CONFIG_SECRET);
   strcat(tmp, " INT NOT NULL, ");
-  strcat(tmp, COL_CONFIG_PRIME);
+  strcat(tmp, COL_CONFIG_PRIMARY);
   strcat(tmp, " INT NOT NULL); ");
 
   strcat(tmp, "CREATE TABLE ");
@@ -100,6 +110,62 @@ void dhb_form_query_find_relationship(char *query) {
   strcat(tmp, " = ? AND ");
   strcat(tmp, COL_REL_CONFIG_ID);
   strcat(tmp, " = ?;");
+
+  strcpy(query, tmp);
+}
+
+void dbh_format_query_select_from_joined_eq(char *query, const char *selection, const char* condition) {
+  char tmp[STR_L] = "SELECT ";
+  strcat(tmp, selection);
+  strcat(tmp, " FROM ");
+  strcat(tmp, TBL_REL);
+  strcat(tmp, " JOIN ");
+  strcat(tmp, TBL_PROGRAM);
+  strcat(tmp, " ON ");
+  strcat(tmp, TBL_PROGRAM);
+  strcat(tmp, ".");
+  strcat(tmp, COL_PROGRAM_ID);
+  strcat(tmp, " = ");
+  strcat(tmp, COL_REL_PROGRAM_ID);
+  strcat(tmp, " JOIN ");
+  strcat(tmp, TBL_CONFIG);
+  strcat(tmp, " ON ");
+  strcat(tmp, TBL_CONFIG);
+  strcat(tmp, ".");
+  strcat(tmp, COL_CONFIG_ID);
+  strcat(tmp, " = ");
+  strcat(tmp, COL_REL_CONFIG_ID);
+  strcat(tmp, " WHERE ");
+  strcat(tmp, condition);
+  strcat(tmp, " = ?;");
+
+  strcpy(query, tmp);
+}
+
+void dbh_format_query_select_from_joined_like(char *query, const char *selection, const char* condition) {
+  char tmp[STR_L] = "SELECT ";
+  strcat(tmp, selection);
+  strcat(tmp, " FROM ");
+  strcat(tmp, TBL_REL);
+  strcat(tmp, " JOIN ");
+  strcat(tmp, TBL_PROGRAM);
+  strcat(tmp, " ON ");
+  strcat(tmp, TBL_PROGRAM);
+  strcat(tmp, ".");
+  strcat(tmp, COL_PROGRAM_ID);
+  strcat(tmp, " = ");
+  strcat(tmp, COL_REL_PROGRAM_ID);
+  strcat(tmp, " JOIN ");
+  strcat(tmp, TBL_CONFIG);
+  strcat(tmp, " ON ");
+  strcat(tmp, TBL_CONFIG);
+  strcat(tmp, ".");
+  strcat(tmp, COL_CONFIG_ID);
+  strcat(tmp, " = ");
+  strcat(tmp, COL_REL_CONFIG_ID);
+  strcat(tmp, " WHERE ");
+  strcat(tmp, condition);
+  strcat(tmp, " LIKE '%' || ? || '%';");
 
   strcpy(query, tmp);
 }
