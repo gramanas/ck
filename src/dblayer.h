@@ -17,7 +17,7 @@
 
 #include <sqlite3.h>
 
-#include "actionparser.h"
+#include "actions.h"
 
 typedef enum SqlErrors SqlError;
 enum SqlErrors {
@@ -55,9 +55,5 @@ extern DB init_make_DB(const UserOpt *opt);
 /* add */
 /*******/
 
-extern int add_transaction_begin(DB *db, const char *progName,
-                                 const char* confPath, const int secret,
-                                 const int prime);
-extern int add_insert_program_to_db(DB *db, const char * name);
-extern int add_insert_config_to_db(DB *db, const int pid, const char *path, const int secret, const int prime);
+extern int add_transaction_begin(DB *db, const AddOpt * const opt);
 #endif /* DBLAYER_H */

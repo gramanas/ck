@@ -1,0 +1,81 @@
+#!/bin/bash
+BIN=@CMAKE_BINARY_DIR@
+
+# initialize
+TEST_LOCATION=@PROJECT_TESTING_GROUNDS@
+mkdir -p $TEST_LOCATION/vc
+mkdir $TEST_LOCATION/sec
+
+exec $BIN/ck conf $BIN init $TEST_LOCATION/vc $TEST_LOCATION/sec &
+wait $!
+
+# setup test configs
+echo "Test 1" > $BIN/test1.conf
+echo "Test 2" > $BIN/test2.conf
+echo "Test 3" > $BIN/test3.conf
+
+# add configs to ck
+exec $BIN/ck conf $BIN add prog1 $BIN/test1.conf -p &
+wait $!
+
+# check db
+if [ $(sqlite3 $BIN/ckdb "select name from program where name = 'prog1'" | wc -l) -ne 1 ]; then
+    echo -e $ERROR"prog1 is not in the db"
+    exit 1
+fi
+
+if [ $(sqlite3 $BIN/ckdb "select path from config where path = '"$BIN"/test1.conf'" | wc -l) -ne 1 ]; then
+    echo -e $ERROR"test1.conf is not in the db"
+    exit 1
+fi
+
+# check files
+if [ ! -f $TEST_LOCATION/vc/prog1_test1.conf ]; then
+    echo -e $ERROR"test1.conf failed (add -p)"
+    exit 1
+fi
+
+# repeat
+exec $BIN/ck conf $BIN add prog2 $BIN/test2.conf -s &
+wait $!
+
+if [ ! -f $TEST_LOCATION/sec/prog2_test2.conf ]; then
+    echo -e $ERROR"test2.conf failed (add -s)"
+    exit 1
+fi
+
+if [ $(sqlite3 $BIN/ckdb "select name from program where name = 'prog2'" | wc -l) -ne 1 ]; then
+    echo -e $ERROR"prog2 is not in the db"
+    exit 1
+fi
+
+if [ $(sqlite3 $BIN/ckdb "select path from config where path = '"$BIN"/test2.conf'" | wc -l) -ne 1 ]; then
+    echo -e $ERROR"test2.conf is not in the db"
+    exit 1
+fi
+
+exec $BIN/ck conf $BIN add prog3 $BIN/test3.conf -p -s &
+wait $!
+
+if [ ! -f $TEST_LOCATION/sec/prog3_test3.conf ]; then
+    echo -e $ERROR"test3.conf failed (add -p -s)"
+    exit 1
+fi
+
+if [ $(sqlite3 $BIN/ckdb "select name from program where name = 'prog3'" | wc -l) -ne 1 ]; then
+    echo -e $ERROR"prog3 is not in the db"
+    exit 1
+fi
+
+if [ $(sqlite3 $BIN/ckdb "select path from config where path = '"$BIN"/test3.conf'" | wc -l) -ne 1 ]; then
+    echo -e $ERROR"test3.conf is not in the db"
+    exit 1
+fi
+
+rm $BIN/ckrc
+rm $BIN/ckdb
+rm $BIN/test1.conf
+rm $BIN/test2.conf
+rm $BIN/test3.conf
+rm -rf $TEST_LOCATION
+echo -e $PASS

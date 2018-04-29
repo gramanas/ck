@@ -11,11 +11,13 @@
 #include "actions.h"
 #include "dblayer.h"
 #include "ckutil.h"
+#include "engine.h"
 
 int run_INIT(UserOpt * opt, Conf *conf) {
+  UNUSED(conf);
   if (db_exists(opt)) {
     printf("Current configuration file location: %s\n", opt->confDir);
-    PRINT_ERR("ck is already initialized.\n");
+    PRINT_ERR("ck is already initialized.");
     return 0;
   }
   if (init_create_config_file(opt)) {
@@ -30,6 +32,7 @@ int run_INIT(UserOpt * opt, Conf *conf) {
 }
 
 AddOpt make_add_options(const int argc, char **argv) {
+  /* since we are here, the first two argumens must exist */
   AddOpt addOpt = {
     .progName = argv[0],
     .confPath = NULL,
@@ -38,7 +41,6 @@ AddOpt make_add_options(const int argc, char **argv) {
     .err = ADD_NO_ERR
   };
   
-  /* the first two argumens have to exist since we are here */
   if (!util_is_file_rw(argv[1])) {
     addOpt.err = ADD_ERR_WRONG_CONFIG;
     return addOpt;
@@ -90,29 +92,34 @@ int run_ADD(UserOpt * opt, Conf *conf) {
   DB db = open_DB(opt);
   if (db.ptr == NULL) {
     if (db.error == SQL_ERR_NO_TABLES) {
-      PRINT_ERR("The database file is currupted. Run ck init anew.\n");
+      PRINT_ERR("The database file is currupted. Run ck init anew.");
     }
+    return 0;
   }
   AddOpt addOpt = make_add_options(opt->argc, opt->argv);
   switch (addOpt.err) {
   case ADD_NO_ERR:
     break;
   case ADD_ERR_WRONG_CONFIG:
-    PRINT_ERR("The config file specified doesn't exist.\n");
+    PRINT_ERR("The config file specified doesn't exist.");
     close_DB(&db);
     return 0;
   case ADD_ERR_WRONG_FLAGS:
-    PRINT_ERR("Flags are: -s for secret and -p for primary.\n");
+    PRINT_ERR("Flags are: -s for secret and -p for primary.");
     close_DB(&db);
     return 0;
   }
   add_print_opts(&addOpt);
-  if (add_transaction_begin(&db, addOpt.progName,
-                            addOpt.confPath, addOpt.secret, addOpt.prime) == 0) {
+  if (add_transaction_begin(&db, &addOpt) == 0) {
     return 0;
   }
-  // do the linking
   close_DB(&db);
+  engine_add_make_link(&addOpt, conf);
+  char err[STR_M];
+  if (engine_err_message(err)) {
+    PRINT_ERR(err);
+    return 0;
+  }
   return 1;
 }
 
@@ -133,6 +140,7 @@ int run_LIST(UserOpt * opt, Conf *conf) {
     if (db.error == SQL_ERR_NO_TABLES) {
       printf("no tables\n");
     }
+    return 0;
   }
   for (int i = 0; i < opt->argc; i++) {
     printf("[%d]: %s\n", i, opt->argv[i]);

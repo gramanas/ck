@@ -54,5 +54,5 @@ struct ConfigValues {
 extern int config_file_parse(Conf *conf, UserOpt *opt);
 
 extern int init_create_config_file(UserOpt *opt);
-
+extern void free_conf(Conf *conf);
 #endif // CONFPARSER_H

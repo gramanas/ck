@@ -43,7 +43,7 @@ int read_next_line(char *line, FILE *f) {
 }
 
 ConfVar match_variables(char *line, char matched[]) {
-  if (line[0] == '#' || util_is_str_empty(line)) {
+  if (line[0] == '#' || str_is_empty(line)) {
     return CV_NO_VAL_OR_COMMENT;
   }
 #define X(var, str, name)                        \
@@ -74,7 +74,7 @@ ConfigParserResult parse(Conf *conf, UserOpt *opt) {
   int flag = 1;
   char line[STR_L];
   char matched[STR_L];
-  while (read_next_line(line, confPtr)) {
+  while (read_next_line(line, confPtr) == 0) {
     if (strlen(line) > STR_L) {
       return CPR_WRONG_CONFIG;
     }
@@ -84,7 +84,6 @@ ConfigParserResult parse(Conf *conf, UserOpt *opt) {
         conf->var = malloc(strlen(matched)+1);  \
         strcpy(conf->var, matched);             \
         if (!util_is_dir(matched)) {            \
-          free(conf->var);                      \
           return CPR_WRONG_##var;               \
         }                                       \
         break;
@@ -111,9 +110,10 @@ int config_file_parse(Conf *conf, UserOpt *opt) {
   switch (parse(conf, opt)) {
 #define X(var,str,name)                                                 \
     case CPR_WRONG_##var:                                               \
-      printf("Config error:\n"                                          \
+      printf("--[ Config error ]--\n"                                   \
              "%s: %s\n"                                                 \
              "defined in config does not exist\n", name, conf->var);    \
+      free(conf->var);                                                  \
       return 0;                                                         \
     break;
     CONFIG_VARIABLES_TABLE
@@ -125,6 +125,15 @@ int config_file_parse(Conf *conf, UserOpt *opt) {
     printf("Config help\n");
   case CPR_OK:
     return 1;
+  }
+}
+
+void free_conf(Conf *conf) {
+  if (conf->VC_dir) {
+    free(conf->VC_dir);
+  }
+  if (conf->SCRT_dir) {
+    free(conf->SCRT_dir);
   }
 }
 

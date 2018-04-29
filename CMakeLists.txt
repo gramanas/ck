@@ -26,6 +26,7 @@ set(ckLib_src
   ${SRC_DIR}/dblayer.c
   ${SRC_DIR}/dbhelper.c
   ${SRC_DIR}/ckutil.c
+  ${SRC_DIR}/engine.c
 )
 set(ckLib_hdr
   ${SRC_DIR}/actionparser.h
@@ -34,6 +35,7 @@ set(ckLib_hdr
   ${SRC_DIR}/dblayer.h
   ${SRC_DIR}/dbhelper.h
   ${SRC_DIR}/ckutil.h
+  ${SRC_DIR}/engine.h
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${RES_DIR}/cmake)
@@ -61,6 +63,7 @@ target_link_libraries (ck ${SQLITE3_LIBRARIES})
 set(BIN_TESTS_DIR ${CMAKE_BINARY_DIR}/res/tests)
 set(PROJECT_TESTING_GROUNDS ${CMAKE_BINARY_DIR}/test_files)
 configure_file(${TESTS_DIR}/init ${BIN_TESTS_DIR}/init @ONLY)
+configure_file(${TESTS_DIR}/add ${BIN_TESTS_DIR}/add @ONLY)
 
 # check_ck
 configure_file(${RES_DIR}/check_ck check_ck @ONLY)

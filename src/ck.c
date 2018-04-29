@@ -32,30 +32,39 @@
 #include "dblayer.h"
 #include "ckutil.h"
 
+void free_res(UserOpt *opt, Conf *conf) {
+  if (opt) {
+    free_user_opt(opt);
+  }
+  if (conf) {
+    free_conf(conf);
+  }
+}
+
 int main(int argc, char *argv[]) {
   UserOpt opt;
   switch(parse_action(argc, argv, &opt)) {
   case APR_HELP:
-    free_user_opt(&opt);
+    free_res(&opt, NULL);
     print_parser_help();
     return 0;
   case APR_ERR:
     print_parser_error(&opt);
-    free_user_opt(&opt);
+    free_res(&opt, NULL);
     return 1;
   case APR_OK:
     break;
   }
 
-  Conf conf;
+  Conf conf = {.VC_dir = NULL, .SCRT_dir = NULL};
   if (opt.action != CKA_INIT) {
     if (!db_exists(&opt)) {
       printf("ck is not initialized in %s.\nRun ck init first.\n", opt.confDir);
-      free_user_opt(&opt);
+      free_res(&opt, NULL);
       return 1;
     }
     if (!config_file_parse(&conf, &opt)) {
-      free_user_opt(&opt);
+      free_res(&opt, &conf);
       return 1;
     }
   }
@@ -71,6 +80,6 @@ int main(int argc, char *argv[]) {
   default:
     break;
   }
-  free_user_opt(&opt);
+  free_res(&opt, &conf);
   return 0;
 }

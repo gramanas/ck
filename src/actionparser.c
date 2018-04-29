@@ -203,11 +203,10 @@ void get_config(UserOpt *opt) {
       return;
     }
   }
-  char * defaultConf = "/.ck";
+  char * defaultConf = ".ck";
   char * home = getenv("HOME");
-  opt->confDir = malloc(strlen(defaultConf)+strlen(home)+1);
-  strcpy(opt->confDir, home);
-  strcat(opt->confDir, defaultConf);
+  opt->confDir = malloc(strlen(defaultConf) + 1 /* '/' */ + strlen(home)+1);
+  str_join_dirname_with_basename(opt->confDir, home, defaultConf);
 
   // rewind
   pos = pos - 1;

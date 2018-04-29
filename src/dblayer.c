@@ -157,7 +157,7 @@ int insert_to_program_table(DB *db, const char *name) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    PRINT_ERR("while preparing insert to program sql.\n");
+    PRINT_ERR("while preparing insert to program sql.");
     db->error = SQL_ERR_SQLITE;    
     return -1;
   }
@@ -169,7 +169,7 @@ int insert_to_program_table(DB *db, const char *name) {
   sqlite3_bind_int(stmt, 1, id);
   sqlite3_bind_text(stmt, 2, name, strlen(name), 0);
   if (sqlite3_step(stmt) != SQLITE_DONE) {
-    PRINT_ERR("while excecuting insert to program sql.\n");
+    PRINT_ERR("while excecuting insert to program sql.");
     db->error = SQL_ERR_SQLITE;
     return -1;
   }
@@ -185,7 +185,7 @@ int insert_to_config_table(DB *db, const char *path, const int secret, const int
   dbh_form_query_insert_config(sql);
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    PRINT_ERR("Error while preparing insert to config sql.\n");
+    PRINT_ERR("Error while preparing insert to config sql.");
     db->error = SQL_ERR_SQLITE;
     return -1;
   }
@@ -199,7 +199,7 @@ int insert_to_config_table(DB *db, const char *path, const int secret, const int
   sqlite3_bind_int(stmt, 3, secret);
   sqlite3_bind_int(stmt, 4, prime);
   if (sqlite3_step(stmt) != SQLITE_DONE) {
-    PRINT_ERR("Error while excecuting insert to config sql.\n");
+    PRINT_ERR("Error while excecuting insert to config sql.");
     db->error = SQL_ERR_SQLITE;
     return-1;
   }
@@ -216,14 +216,14 @@ int insert_to_rel_table(DB *db, const int pid, const int cid) {
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
     db->error = SQL_ERR_SQLITE; 
-    PRINT_ERR("while preparing insert to rel sql.\n");
+    PRINT_ERR("while preparing insert to rel sql.");
     return -1;
   }
   sqlite3_bind_int(stmt, 1, pid);
   sqlite3_bind_int(stmt, 2, cid);
   if (sqlite3_step(stmt) != SQLITE_DONE) {
     db->error = SQL_ERR_SQLITE; 
-    PRINT_ERR("while excecuting insert to rel sql.\n");
+    PRINT_ERR("while excecuting insert to rel sql.");
     return-1;
   }
   sqlite3_finalize(stmt);
@@ -239,7 +239,7 @@ int program_exists(DB *db, const char* name) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    PRINT_ERR("Error while preparing program_exists sql.\n");
+    PRINT_ERR("Error while preparing program_exists sql.");
     return -2;
   }
   sqlite3_bind_text(stmt, 1, name, strlen(name), 0);
@@ -252,7 +252,7 @@ int program_exists(DB *db, const char* name) {
   return id;
 }
 
-int config_exists(DB *db, const int pid, const char* path) {
+int config_exists(DB *db, const char* path) {
   sqlite3_stmt *stmt;
   int rc;
 
@@ -261,7 +261,7 @@ int config_exists(DB *db, const int pid, const char* path) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    PRINT_ERR("while preparing config_exists sql.\n");
+    PRINT_ERR("while preparing config_exists sql.");
     return -2;
   }
   sqlite3_bind_text(stmt, 1, path, strlen(path), 0);
@@ -293,7 +293,7 @@ int program_has_primary_config(DB *db, const int pid) {
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
-    PRINT_ERR("while preparing program_has_primary_exists sql.\n");
+    PRINT_ERR("while preparing program_has_primary_exists sql.");
     return -2;
   }
   sqlite3_bind_int(stmt, 1, pid);
@@ -309,7 +309,7 @@ int program_has_primary_config(DB *db, const int pid) {
 }
 
 int add_get_or_insert_config_to_db(DB *db, const int pid, const char *path, const int secret, const int prime) {
-  int cid = config_exists(db, pid, path);
+  int cid = config_exists(db, path);
   if (cid == -2) {
     db->error = SQL_ERR_SQLITE; 
     return -1;
@@ -340,17 +340,15 @@ int add_get_or_insert_program_to_db(DB *db, const char *name) {
   return pid;
 }
 
-int add_transaction_begin(DB *db, const char *progName,
-                          const char* confPath, const int secret,
-                          const int prime) {
+int add_transaction_begin(DB *db, const AddOpt * const opt) {
   __BEGIN_TRANSACTION__
-  int pid = add_get_or_insert_program_to_db(db, progName);
+  int pid = add_get_or_insert_program_to_db(db, opt->progName);
   if (db->error == SQL_ERR_SQLITE) {
     PRINT_ERR("Could not insert program to db.\n");
     close_DB(db);
     return 0;
   }
-  int cid = add_get_or_insert_config_to_db(db, pid, confPath, secret, prime);
+  int cid = add_get_or_insert_config_to_db(db, pid, opt->confPath, opt->secret, opt->prime);
   if (db->error == SQL_ERR_SQLITE) {
     PRINT_ERR("Could not insert config to db.\n");
     close_DB(db);
