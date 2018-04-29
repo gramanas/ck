@@ -1,0 +1,9 @@
+* checkc_ck
+- add init function that writes to dev null
+- check for more add situations
+  + symlink exists
+  + conf not writeable
+  
+* add
+- fix above issues
+
