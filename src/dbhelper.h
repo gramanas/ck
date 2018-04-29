@@ -56,6 +56,6 @@ extern void dhb_form_query_insert_relationship(char *query);
 extern void dhb_form_query_find_program(char *query);
 extern void dhb_form_query_find_config(char *query);
 extern void dhb_form_query_find_relationship(char *query);
-extern void dbh_format_query_select_from_joined_eq(char *query, const char *selection, const char* condition);
-extern void dbh_format_query_select_from_joined_like(char *query, const char *selection, const char* condition);
+extern void dbh_form_query_select_from_joined_eq(char *query, const char *selection, const char* condition);
+extern void dbh_form_query_select_from_joined_like(char *query, const char *selection, const char* condition);
 #endif /* DBHELPER_H */

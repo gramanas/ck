@@ -15,7 +15,7 @@
  * procedures.
  *
  * Keeps track of what error occured where and provides
- * printParserHelp() and printParserError() functions
+ * print_parser_help() and print_parser_error() functions
  * to notify the user
  *
  * -------------------------------------------------------------------------- */
@@ -34,7 +34,7 @@
 typedef enum ParseErrors ParseError;
 enum ParseErrors {
   PERR_NOERR = 0,
-#define X(ACTION) \
+#define X(ACTION)                               \
   PERR_##ACTION##_WRONG,
   CK_ACTIONS
 #undef X
@@ -50,11 +50,11 @@ enum CkActions {
 #undef X
 };
 
-typedef enum OptParserResults ParseResult;
-enum OptParserResults {
-  OPR_OK,
-  OPR_ERR,
-  OPR_HELP
+typedef enum ActionParserResults ActionParseResult;
+enum ActionParserResults {
+  APR_OK,
+  APR_ERR,
+  APR_HELP
 };
 
 typedef struct UserOptions UserOpt;
@@ -66,9 +66,9 @@ struct UserOptions {
   char *argv[10]; // action's options
 };
 
-extern ParseResult parseAction(int argc, char* argv[], UserOpt *opt);
-extern void printParserError();
-extern void printParserHelp();
+extern ActionParseResult parse_action(int argc, char* argv[], UserOpt *opt);
+extern void print_parser_error();
+extern void print_parser_help();
 extern void free_user_opt(UserOpt *opt);
 
 #endif // ACTIONPARSER_H

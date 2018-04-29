@@ -114,7 +114,7 @@ void dhb_form_query_find_relationship(char *query) {
   strcpy(query, tmp);
 }
 
-void dbh_format_query_select_from_joined_eq(char *query, const char *selection, const char* condition) {
+void dbh_form_query_select_from_joined_eq(char *query, const char *selection, const char* condition) {
   char tmp[STR_L] = "SELECT ";
   strcat(tmp, selection);
   strcat(tmp, " FROM ");

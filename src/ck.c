@@ -28,27 +28,22 @@
  *
  * -------------------------------------------------------------------------- */
 
-#include <stdio.h>
-#include <string.h>
-#include <sqlite3.h>
-
-#include "actionparser.h"
 #include "actions.h"
-#include "confparser.h"
 #include "dblayer.h"
+#include "ckutil.h"
 
 int main(int argc, char *argv[]) {
   UserOpt opt;
-  switch(parseAction(argc, argv, &opt)) {
-  case OPR_HELP:
+  switch(parse_action(argc, argv, &opt)) {
+  case APR_HELP:
     free_user_opt(&opt);
-    printParserHelp();
+    print_parser_help();
     return 0;
-  case OPR_ERR:
-    printParserError(&opt);
+  case APR_ERR:
+    print_parser_error(&opt);
     free_user_opt(&opt);
     return 1;
-  case OPR_OK:
+  case APR_OK:
     break;
   }
 

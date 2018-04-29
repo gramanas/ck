@@ -18,44 +18,48 @@
 
 /* accepted commands */
 /* [0] is the count */
-const char* const strINIT[] = {"2", "init", "-i"};
-const char* const strADD[] = {"2", "add", "-a"};
-const char* const strDEL[] = {"2", "del", "-d"};
-const char* const strEDIT[] = {"3", "edit", "e", "-e"};
-const char* const strLIST[] = {"3", "list", "ls", "-ls"};
-const char* const strSEARCH[] = {"3", "search", "s", "-s"};
-const char* const strHELP[] = {"4", "help", "?", "-h", "--help"};
+const char* const strINIT[]    = {"2", "init", "-i"};
+const char* const strADD[]     = {"2", "add", "-a"};
+const char* const strDEL[]     = {"2", "del", "-d"};
+const char* const strEDIT[]    = {"3", "edit", "e", "-e"};
+const char* const strLIST[]    = {"3", "list", "ls", "-ls"};
+const char* const strSEARCH[]  = {"3", "search", "s", "-s"};
+const char* const strHELP[]    = {"4", "help", "?", "-h", "--help"};
 const char* const strConfDir[] = {"3", "config", "conf", "-c"};
 
 /* Number of opts */
 static int optNum;
+
 /* holds the list of the opts
-   as given by the user */
+ * as given by the user */
 static char **opts;
+
 /* points to the current token */
 static char *token;
-/* points to the position
- * to be read */
+
+/* the position to be read */
 static int pos = 0;
 
 /* Reads the next token and returns it's position
  * Returns -1 otherwise */
-int nextToken() {
+int next_token() {
   if (pos < optNum) {
     token = opts[pos];
     return pos++;
   }
   else {
-    token = "";
+    token = NULL;
     return -1;
   }
 }
 
-void getOpt(int position, UserOpt *opt) {
-  // get arg
-  nextToken();
+/* copy the option from the list
+ * to the UserOpt struct */
+void get_opt(int position, UserOpt *opt) {
+  /* get arg */
+  next_token();
 
-  // allocate memory
+  /* allocate memory */
   opt->argv[position] = (char *)malloc((strlen(token))*sizeof(char) + 1);
   strcpy(opt->argv[position], token);
 }
@@ -65,8 +69,8 @@ void getOpt(int position, UserOpt *opt) {
  * like so "ck ACTION ..."
  *                    ^               */
 int parse_INIT(UserOpt *opt) {
-  // INIT expects 2 arguments
-  // starting from 0
+  /* INIT expects 2 arguments
+   * starting from 0 */
   opt->argc = 2;
   if (optNum != pos /* already consumed */ + opt->argc) {
     opt->err = PERR_INIT_WRONG;
@@ -74,13 +78,13 @@ int parse_INIT(UserOpt *opt) {
   }
 
   for (int i = 0; i < opt->argc; i++) {
-    getOpt(i, opt);
+    get_opt(i, opt);
   }
   return 1;
 }
 
 int parse_ADD(UserOpt *opt) {
-  // ADD expects 2 to 4 arguments
+  /* ADD expects 2 to 4 arguments */
   if (optNum <= pos + 1
       || optNum > pos + 4) {
     opt->err = PERR_ADD_WRONG;
@@ -89,7 +93,7 @@ int parse_ADD(UserOpt *opt) {
 
   opt->argc = optNum - pos;
   for (int i = 0; i < opt->argc; i++) {
-    getOpt(i, opt);
+    get_opt(i, opt);
   }
   return 1;
 }
@@ -111,7 +115,7 @@ int parse_HELP(UserOpt *opt) {
 }
 
 
-int parseVals(UserOpt *opt) {
+int parse_vals(UserOpt *opt) {
   switch (opt->action) {
 #define X(ACTION)                                \
     case CKA_##ACTION:                           \
@@ -123,17 +127,26 @@ int parseVals(UserOpt *opt) {
   }
 }
 
-CkAction determineAction() {
-  int i = 0;
+void determine_action(UserOpt *opt) {
+  /* get action */
+  if (next_token() == -1) {
+    opt->action = CK_WRONG_ACTION;
+    return;
+  }
+
+  int i;
 #define X(ACTION)                                                       \
   for (i = 1; i < atoi(str##ACTION[0]) + 1; i++) {                      \
     if (strcmp(token, str##ACTION[i]) == 0) {                           \
-      return CKA_##ACTION;                                              \
+      opt->action = CKA_##ACTION;                                       \
+      return;                                                           \
     }                                                                   \
   }
-  CK_ACTIONS
+  CK_ACTIONS;
 #undef X
-  return CK_WRONG_ACTION;
+
+  opt->action = CK_WRONG_ACTION;
+  return;
 }
 
 UserOpt make_empty_user_opt() {
@@ -148,24 +161,29 @@ UserOpt make_empty_user_opt() {
   return opt;
 }
 
+
+/* called to free the resources
+ * UserOpt holds */
 void free_user_opt(UserOpt *opt) {
   for (int i = 0; i < 10; i++) {
     if (opt->argv[i] != NULL) {
       free(opt->argv[i]);
-    }    
+    }
   }
   if (opt->confDir != NULL) {
     free(opt->confDir);
   }
 }
 
-void getConfig(UserOpt *opt) {
-  // get first token
-  nextToken();
-  int ok = 1;
+/* If the used has specified a config file other
+ * than the default get it now */
+void get_config(UserOpt *opt) {
+  /* get first token */
+  next_token();
+
   for (int i = 1; i < atoi(strConfDir[0]) + 1; i++) {
     if (strcmp(token, strConfDir[i]) == 0) {
-      if (nextToken() == -1) {
+      if (next_token() == -1) {
         printf("Config needs a value\n");
         exit(1);
       }
@@ -196,74 +214,33 @@ void getConfig(UserOpt *opt) {
   token = opts[pos];
 }
 
-ParseResult parseAction(int argc, char* argv[], UserOpt *opt) {
-  *opt = make_empty_user_opt();
-  if (argc < 2) {
-    return OPR_HELP;
-  }
-  opts = argv;
-  optNum = argc;
-
-  // skip the program nake
-  nextToken();
-
-  getConfig(opt);
-  // get action
-  nextToken();
-  opt->action = determineAction();
-  if (opt->action == CK_WRONG_ACTION) {
-    opt->err = PERR_UNKONW_ACTION;
-    return OPR_ERR;
-  }
-  if (opt->action == CKA_HELP) {
-    return OPR_HELP;
-  }
-
-  // parse values
-  if (!parseVals(opt)) {
-    return OPR_ERR;
-  }
-
-  if (opt->err == PERR_NOERR) {
-    return OPR_OK;
-  }
-  else {
-    return OPR_ERR;
-  }
-}
-
-void getPossibleActionNames(char * dest, CkAction ckAction) {
-  if (ckAction == -1) {
-    dest = NULL;
-    return;
-  }
-
+void get_possible_action_strings(char *dest, CkAction ckAction) {
   char buf[STR_S];
-  
   switch (ckAction) {
 #define X(ACTION)                                         \
     case CKA_##ACTION:                                    \
-    strcpy(buf, "{ ");                                    \
-    for (int i = 1; i < atoi(str##ACTION[0]); i++) {      \
-      strcat(buf, str##ACTION[i]);                        \
-      strcat(buf, ", ");                                  \
-    }                                                     \
-    strcat(buf, str##ACTION[atoi(str##ACTION[0])]);       \
-    strcat(buf, " }");                                    \
-    break;
+      strcpy(buf, "{ ");                                  \
+      for (int i = 1; i < atoi(str##ACTION[0]); i++) {    \
+        strcat(buf, str##ACTION[i]);                      \
+        strcat(buf, ", ");                                \
+      }                                                   \
+      strcat(buf, str##ACTION[atoi(str##ACTION[0])]);     \
+      strcat(buf, " }");                                  \
+      break;
     CK_ACTIONS
 #undef X
   default:
-    break;    
+    dest = NULL;
+    return;
   }
 
   strcpy(dest, buf);
 }
 
-void printParserError(UserOpt *opt) {
+void print_parser_error(UserOpt *opt) {
   char errStr[STR_M];
   char names[STR_S];
-  getPossibleActionNames(names, opt->action);
+  get_possible_action_strings(names, opt->action);
 
   switch (opt->err) {
   case PERR_NOERR:
@@ -296,22 +273,60 @@ void printParserError(UserOpt *opt) {
   printf("Parsing error\n%s\n", errStr);
 }
 
-void printParserHelp() {
+void print_parser_help() {
   char names[STR_S];
   printf("ck - the config keeper\n");
   printf("Usage:\n");
-  getPossibleActionNames(names, CKA_INIT);
-  printf("Initialize: \t%s\n",      names);
-  getPossibleActionNames(names, CKA_ADD);
-  printf("Add config: \t%s\n",       names);
-  getPossibleActionNames(names, CKA_DEL);
-  printf("Delete config: \t%s\n",    names);
-  getPossibleActionNames(names, CKA_EDIT);
-  printf("Edit config: \t%s\n",     names);
-  getPossibleActionNames(names, CKA_LIST);
-  printf("List configs: \t%s\n",    names);
-  getPossibleActionNames(names, CKA_SEARCH);
-  printf("Search: \t%s\n",        names);
-  getPossibleActionNames(names, CKA_HELP);
-  printf("Print this: \t%s\n",      names);
+  get_possible_action_strings(names, CKA_INIT);
+  printf("Initialize: \t%s\n", names);
+  get_possible_action_strings(names, CKA_ADD);
+  printf("Add config: \t%s\n", names);
+  get_possible_action_strings(names, CKA_DEL);
+  printf("Delete config: \t%s\n", names);
+  get_possible_action_strings(names, CKA_EDIT);
+  printf("Edit config: \t%s\n", names);
+  get_possible_action_strings(names, CKA_LIST);
+  printf("List configs: \t%s\n", names);
+  get_possible_action_strings(names, CKA_SEARCH);
+  printf("Search: \t%s\n", names);
+  get_possible_action_strings(names, CKA_HELP);
+  printf("Print this: \t%s\n", names);
+}
+
+ActionParseResult parse_action(int argc, char* argv[], UserOpt *opt) {
+  /* make empty user opt */
+  *opt = make_empty_user_opt();
+  if (argc < 2) {
+    return APR_HELP;
+  }
+  opts = argv;
+  optNum = argc;
+
+  /* skip the program name */
+  next_token();
+
+  /* figure what is the config file */
+  get_config(opt);
+
+  /* find the action */
+  determine_action(opt);
+  if (opt->action == CK_WRONG_ACTION) {
+    opt->err = PERR_UNKONW_ACTION;
+    return APR_ERR;
+  }
+  if (opt->action == CKA_HELP) {
+    return APR_HELP;
+  }
+
+  // parse values
+  if (!parse_vals(opt)) {
+    return APR_ERR;
+  }
+
+  if (opt->err == PERR_NOERR) {
+    return APR_OK;
+  }
+  else {
+    return APR_ERR;
+  }
 }

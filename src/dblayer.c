@@ -289,7 +289,7 @@ int program_has_primary_config(DB *db, const int pid) {
   strcat(condition, ".");
   strcat(condition, COL_PROGRAM_ID);
 
-  dbh_format_query_select_from_joined_eq(sql, COL_CONFIG_PRIMARY, condition);
+  dbh_form_query_select_from_joined_eq(sql, COL_CONFIG_PRIMARY, condition);
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
