@@ -12,34 +12,44 @@ function run_add {
     exec $BIN/ck conf $BIN add $1 $BIN/$2 $3 $4 &
     wait $!
 
+    if [ $? -ne 0 ]; then
+        echo -e $ERROR" ck crashed."
+        exit 1
+    fi
+
     # check db
-    if [ $(sqlite3 $BIN/ckdb "select name from program where name = '"$1"'" | wc -l) -ne 1 ]; then
-        echo -e $ERROR$1" is not in the db"
+    if [ "$(sqlite3 $BIN/ckdb "select name from program where name = '$1'")" != "$1" ]; then
+        echo -e $ERROR $1" is not in the db."
         exit 1
     fi
     
-    if [ $(sqlite3 $BIN/ckdb "select path from config where path = '"$BIN"/"$2"'" | wc -l) -ne 1 ]; then
-        echo -e $ERROR$2" is not in the db"
+    if [ "$(sqlite3 $BIN/ckdb "select path from config where path = '$BIN/$2'")" != "$BIN/$2" ]; then
+        echo -e $ERROR $2" is not in the db."
         exit 1
     fi
 
-    FOLDER=vc
-
     # check files
+    FOLDER=vc
     if [[ "$3" = "-s" || "$4" = "-s" ]]; then
         FOLDER=sec
     fi
 
     if [ ! -f $TEST_LOCATION/$FOLDER/$1_$2 ]; then
-        echo -e $ERROR$2" failed (add "$3" "$4")"
+        echo -e $ERROR$2" No move (add "$3" "$4")"
         exit 1
     fi
+
+    if [ ! -L $BIN/$2 ]; then
+        echo -e $ERROR$2" No symlink (add "$3" "$4")"
+        exit 1
+    fi  
 }
 
 run_add prog1 test1.conf -p
+echo ""
 run_add prog2 test2.conf -s
+echo ""
 run_add prog3 test3.conf -p -s
-
 
 clear_tests
 echo -e $PASS

@@ -8,13 +8,18 @@ mkdir $TEST_LOCATION/sec
 exec $BIN/ck conf $BIN init $TEST_LOCATION/vc $TEST_LOCATION/sec &
 wait $!
 
+if [ $? -ne 0 ]; then
+    echo -e $ERROR" ck crashed."
+    exit 1
+fi
+
 if [ ! -f $BIN/ckrc ]; then
-    echo -e $ERROR"Config file not created."
+    echo -e $ERROR" Config file not created."
     exit 1
 fi
 
 if [ ! -f $BIN/ckdb ]; then
-    echo -e $ERROR"DB file not created."
+    echo -e $ERROR" DB file not created."
     exit 1
 fi
 

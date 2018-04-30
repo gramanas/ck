@@ -23,15 +23,46 @@ function clear_tests {
     rm -rf $TEST_LOCATION
 }
 
-if [ "$1" = "-c" ]; then
-    clear_tests
-    exit 0
+function run {
+    DIR=@BIN_TESTS_DIR@
+    for i in $( ls $DIR ); do
+        ERROR="TEST "$i" FAILED:"
+        PASS="--[TEST "$i" PASSED]--\n"
+        source $DIR/$i
+        wait $!
+    done
+}
+
+function print_help {
+    echo -e "ck test suite"
+    echo -e "run without flags to begin testing"
+    echo -e "\nflags:"
+    echo -e "  -c, --clear\t\tremove test files"
+    echo -e "             \t\t use it if the tests fail"
+    echo -e "  -h, --help, *\t\tprint this"
+    exit
+}
+
+if [[ $# -gt 1 ]]; then
+    print_help
 fi
 
-DIR=@BIN_TESTS_DIR@
-for i in $( ls $DIR ); do
-    ERROR="TEST "$i" FAILED:"
-    PASS="--[TEST "$i" PASSED]--\n"
-    source $DIR/$i
-    wait $!
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -h | --help)
+            print_help
+            ;;
+        -c | --clear)
+            clear_tests
+            exit
+            ;;
+        *)    # unknown option
+            print_help
+            exit
+            ;;
+    esac
 done
+
+run
