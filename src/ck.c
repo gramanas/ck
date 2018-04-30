@@ -1,4 +1,4 @@
-/* ck.c - Main ck file -------------------------------------------------*- C -*-
+/* ck.c - the main -----------------------------------------------------*- C -*-
  *
  * This file is part of ck, the config keeper
  *
@@ -23,8 +23,8 @@
  * -----------------------------------------------------------------------------
  *
  * This is the file where the main function lies.
- * It first parses the user options and then runs the
- * handles the list of user arguments to the run_ACTION functions.
+ * It first parses the user options and config, then passes 
+ * the results to the run_ACTION functions.
  *
  * -------------------------------------------------------------------------- */
 
@@ -43,6 +43,7 @@ void free_res(UserOpt *opt, Conf *conf) {
 
 int main(int argc, char *argv[]) {
   UserOpt opt;
+  /* get user opt */
   switch(parse_action(argc, argv, &opt)) {
   case APR_HELP:
     free_res(&opt, NULL);
@@ -57,12 +58,16 @@ int main(int argc, char *argv[]) {
   }
 
   Conf conf = {.VC_dir = NULL, .SCRT_dir = NULL};
+  /* If the action is init don't load the config, skip to running init*/
   if (opt.action != CKA_INIT) {
+    /* If the db doesn't exist ck is not initialized in the config 
+     * location specified in opt */
     if (!db_exists(&opt)) {
       printf("ck is not initialized in %s.\nRun ck init first.\n", opt.confDir);
       free_res(&opt, NULL);
       return 1;
     }
+    /* Finally parse the config file and exit on error */
     if (!config_file_parse(&conf, &opt)) {
       free_res(&opt, &conf);
       return 1;
