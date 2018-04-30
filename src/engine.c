@@ -30,7 +30,7 @@ int copy_config(char *path);
 
 
 void link_config(const AddOpt *opt, const char* newPath) {
-  printf("Linking %s -> %s\n", opt->confPath, newPath);
+  printf("Linking %s -> %s\n", newPath, opt->confPath);
   if (util_symlink_file(newPath, opt->confPath) != 0) {
     strcpy(engine_err, "Could not link file.");
   }
