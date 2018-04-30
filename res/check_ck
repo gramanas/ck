@@ -1,9 +1,37 @@
 #!/bin/bash
 
+BIN=@CMAKE_BINARY_DIR@
+TEST_LOCATION=@PROJECT_TESTING_GROUNDS@
+
+function running {
+    echo "--[TESTING $1]--"
+}
+
+function init {
+    running $1
+    mkdir -p $TEST_LOCATION/vc
+    mkdir $TEST_LOCATION/sec
+
+    exec $BIN/ck conf $BIN init $TEST_LOCATION/vc $TEST_LOCATION/sec > /dev/null &
+    wait $!
+}
+
+function clear_tests {
+    rm $BIN/ckrc
+    rm $BIN/ckdb
+    rm $BIN/test*.conf
+    rm -rf $TEST_LOCATION
+}
+
+if [ "$1" = "-c" ]; then
+    clear_tests
+    exit 0
+fi
+
 DIR=@BIN_TESTS_DIR@
 for i in $( ls $DIR ); do
     ERROR="TEST "$i" FAILED:"
-    PASS="TEST "$i" PASSED"
+    PASS="--[TEST "$i" PASSED]--\n"
     source $DIR/$i
     wait $!
 done
