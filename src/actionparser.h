@@ -66,6 +66,9 @@ struct UserOptions {
   char *argv[10]; // action's options
 };
 
+
+/* Parse cli args, fill UserOpt struct
+ * and return the result enum */
 extern ActionParseResult parse_action(int argc, char* argv[], UserOpt *opt);
 extern void print_parser_error();
 extern void print_parser_help();
