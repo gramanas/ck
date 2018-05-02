@@ -83,7 +83,7 @@ int util_symlink_file(const char *path, const char* dest) {
   return symlink(path, dest);
 }
 
-void str_make_new_config_name(char *ret, const char *path,
+void str_make_ck_config_name(char *ret, const char *path,
                               const char *progName) {
   char *basec = strdup(path);
   char *bname = basename(basec);

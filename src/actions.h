@@ -43,4 +43,5 @@ struct AddOptions {
   int prime;
   AddOptErr err;
 };
+
 #endif /* ACTIONS_H */

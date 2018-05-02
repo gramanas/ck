@@ -102,7 +102,16 @@ int parse_DEL(UserOpt *opt) {
   return -1;
 }
 int parse_EDIT(UserOpt *opt) {
-  return -1;
+  /* EDIT expects 1 to 2 arguments */
+  if (optNum <= pos || optNum > pos + 2) {
+    opt->err = PERR_EDIT_WRONG;
+    return -1;
+  }
+  opt->argc = optNum - pos;
+  for (int i = 0; i < opt->argc; i++) {
+    get_opt(i, opt);
+  }
+  return 1;
 }
 int parse_LIST(UserOpt *opt) {
   return -1;
@@ -237,7 +246,7 @@ void get_possible_action_strings(char *dest, CkAction ckAction) {
 }
 
 void print_parser_error(UserOpt *opt) {
-  char errStr[STR_M];
+  char errStr[STR_L];
   char names[STR_S];
   get_possible_action_strings(names, opt->action);
 
@@ -251,13 +260,13 @@ void print_parser_error(UserOpt *opt) {
     sprintf(errStr, "Initialize database\nUsage: %s version_control_dir secret_dir", names);
     break;
   case PERR_ADD_WRONG:
-    sprintf(errStr, "Add config (new or existing)\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
+    sprintf(errStr, "Add config \nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
     break;
   case PERR_DEL_WRONG:
     sprintf(errStr, "Delete config or program\nUsage: %s ProgramName ConfigPath [-s](secret) [-p](primary)", names);
     break;
   case PERR_EDIT_WRONG:
-    sprintf(errStr, "Edit config\nUsage: add ProgramName ConfigPath [-s](secret) [-p](primary)");
+    sprintf(errStr, "Edit config with $EDITOR\nUsage: %s ProgramName or configBasename (or both)", names);
     break;
   case PERR_LIST_WRONG:
     sprintf(errStr, "Usage: .........)");

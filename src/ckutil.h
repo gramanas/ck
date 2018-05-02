@@ -47,7 +47,7 @@
 
 /* Create the config name to be used when storing a new config to 
  * the VC or SCRT dir */
-extern void str_make_new_config_name(char *ret, const char *path,
+extern void str_make_ck_config_name(char *ret, const char *path,
                                      const char *progName);
 
 /* Joins the two strings into ret, with a '/' in between */

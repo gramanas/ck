@@ -230,6 +230,8 @@ int insert_to_rel_table(DB *db, const int pid, const int cid) {
   return 1;
 }
 
+/* Returns -2 or error, -1 if program doesn't exist
+ * else the program ID */
 int program_exists(DB *db, const char* name) {
   sqlite3_stmt *stmt;
   int rc;
@@ -279,7 +281,9 @@ int add_insert_relationship(DB *db, const int pid, const int cid) {
   return insert_to_rel_table(db, pid, cid);
 }
 
-int program_has_primary_config(DB *db, const int pid) {
+
+/* Returns the path of the found config via *ret */
+int program_has_primary_config(DB *db, const int pid, char *ret, int *sec) {
   sqlite3_stmt *stmt;
   int rc;
 
@@ -289,7 +293,13 @@ int program_has_primary_config(DB *db, const int pid) {
   strcat(condition, ".");
   strcat(condition, COL_PROGRAM_ID);
 
-  dbh_form_query_select_from_joined_eq(sql, COL_CONFIG_PRIMARY, condition);
+  char selection[STR_M] = COL_CONFIG_PRIMARY;
+  strcat(selection, ", ");
+  strcat(selection, COL_CONFIG_PATH);
+  strcat(selection, ", ");
+  strcat(selection, COL_CONFIG_SECRET);
+
+  dbh_form_query_select_from_joined_eq(sql, selection, condition);
 
   rc = sqlite3_prepare_v2(db->ptr, sql, -1, &stmt, 0);
   if (rc != SQLITE_OK) {
@@ -299,13 +309,19 @@ int program_has_primary_config(DB *db, const int pid) {
   sqlite3_bind_int(stmt, 1, pid);
   int count = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    count += sqlite3_column_int(stmt, 0);
+    if (sqlite3_column_int(stmt, 0) == 1) {
+      if (ret) {
+        strcpy(ret,(char *)sqlite3_column_text(stmt, 1));
+      }
+      if (sec) {
+        *sec = sqlite3_column_int(stmt, 2);
+      }
+      sqlite3_finalize(stmt);
+      return 1;
+    }
   }
   sqlite3_finalize(stmt);
-  if (count == 0) {
-    return 0;
-  }
-  return 1;
+  return 0;
 }
 
 int add_get_or_insert_config_to_db(DB *db, const int pid, const char *path, const int secret, const int prime) {
@@ -316,7 +332,7 @@ int add_get_or_insert_config_to_db(DB *db, const int pid, const char *path, cons
   }
   /* If config doesnt exist insert it and return it's cid */
   if (cid == -1) {
-    if (program_has_primary_config(db, pid) && prime) {
+    if (program_has_primary_config(db, pid, NULL, NULL) && prime) {
       db->error = SQL_ERR_PRIMARY_REDEFINITION;
       return -1;
     }
@@ -345,32 +361,53 @@ int add_transaction_begin(DB *db, const AddOpt * const opt) {
   int pid = add_get_or_insert_program_to_db(db, opt->progName);
   if (db->error == SQL_ERR_SQLITE) {
     PRINT_ERR("Could not insert program to db.\n");
-    close_DB(db);
     return 0;
   }
   int cid = add_get_or_insert_config_to_db(db, pid, opt->confPath, opt->secret, opt->prime);
   if (db->error == SQL_ERR_SQLITE) {
     PRINT_ERR("Could not insert config to db.\n");
-    close_DB(db);
     return 0;
   }
   else if (db->error == SQL_CONFIG_PATH_EXISTS) {
     PRINT_ERR("This config already exists in the database.\n");
-    close_DB(db);
     return 0;
   }
   else if (db->error == SQL_ERR_PRIMARY_REDEFINITION) {
     PRINT_ERR("This program already has a primary config.\n");
-    close_DB(db);
     return 0;
   }
   add_insert_relationship(db, pid, cid);
   if (db->error == SQL_ERR_SQLITE) {
     PRINT_ERR("rel update failed\n");
-    close_DB(db);
     return 0;
   }
   __END_TRANSACTION__
 
   return 1;
+}
+
+int edit_get_prime_config_from_program(DB *db, char *pName, char *ret, int *secret) {
+  int pid = program_exists(db, pName);
+  /* error */
+  if (pid == -2) {
+    return -1;
+  }
+
+  /* program exists */
+  if (pid > -1) {
+    char path[STR_M];
+    if (program_has_primary_config(db, pid, path, secret) == 1) {
+      if (!str_is_empty(path)) {
+        if (ret) {
+          char confName[STR_M];
+          str_make_ck_config_name(confName, path, pName);
+          strcpy(ret, confName);
+        }
+        return 1;
+      }
+    }
+  }
+
+  /* No prime config found */
+  return 0;
 }

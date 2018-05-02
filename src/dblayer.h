@@ -56,4 +56,10 @@ extern DB init_make_DB(const UserOpt *opt);
 /*******/
 
 extern int add_transaction_begin(DB *db, const AddOpt * const opt);
+
+/********/
+/* edit */
+/********/
+
+extern int edit_get_prime_config_from_program(DB *db, char *pName, char *ret, int *secret);
 #endif /* DBLAYER_H */

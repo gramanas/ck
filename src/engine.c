@@ -38,7 +38,7 @@ void link_config(const AddOpt *opt, const char* newPath) {
 
 void move_config(const AddOpt *opt, const Conf *conf, char *ret) {
   char newName[STR_M];
-  str_make_new_config_name(newName, opt->confPath, opt->progName);
+  str_make_ck_config_name(newName, opt->confPath, opt->progName);
   char newPath[STR_L];
   str_join_dirname_with_basename(newPath, opt->secret ? conf->SCRT_dir : conf->VC_dir, newName);
   printf("Moving %s -> %s\n", opt->confPath, newPath);

@@ -111,6 +111,7 @@ int run_ADD(UserOpt * opt, Conf *conf) {
   }
   add_print_opts(&addOpt);
   if (add_transaction_begin(&db, &addOpt) == 0) {
+    close_DB(&db);
     return 0;
   }
   close_DB(&db);
@@ -128,12 +129,41 @@ int run_DEL(UserOpt * opt, Conf *conf) {
   return 0;
 }
 
-int run_EDIT(UserOpt * opt, Conf *conf) {
+int run_EDIT(UserOpt *opt, Conf *conf) {
   printf("Running %s\n", "edit");
-  return 0;
+  DB db = open_DB(opt);
+  if (db.ptr == NULL) {
+    if (db.error == SQL_ERR_NO_TABLES) {
+      PRINT_ERR("The database file is currupted. Run ck init anew.");
+    }
+    return 0;
+  }
+
+  char confPath[STR_M];
+  if (opt->argc == 1) {
+    char confName[STR_M];
+    int secret = 0;
+    if (edit_get_prime_config_from_program(&db, opt->argv[0], confName, &secret) == 1) {
+      str_join_dirname_with_basename(confPath, secret ? conf->SCRT_dir : conf->VC_dir, confName);
+      printf("%s\n", confPath);
+    } else {
+      PRINT_ERR("No primary config");
+      close_DB(&db);
+      return 0;
+    }
+  }
+  close_DB(&db);
+    
+  char *editor = getenv("EDITOR");
+  char command[STR_L];
+  strcpy(command, str_is_empty(editor) ? "nano" : editor);
+  strcat(command, " ");
+  strcat(command, confPath);
+  system(command);
+  return 1;
 }
 
-int run_LIST(UserOpt * opt, Conf *conf) {
+int run_LIST(UserOpt *opt, Conf *conf) {
   printf("Running %s\n", "list");
   DB db = open_DB(opt);
   if (db.ptr == NULL) {
@@ -149,12 +179,12 @@ int run_LIST(UserOpt * opt, Conf *conf) {
   return 0;
 }
 
-int run_SEARCH(UserOpt * opt, Conf *conf) {
+int run_SEARCH(UserOpt *opt, Conf *conf) {
   printf("Running %s\n", "search");
   return 0;
 }
 
-int run_HELP(UserOpt * opt, Conf *conf) {
+int run_HELP(UserOpt *opt, Conf *conf) {
   printf("Running %s\n", "help");
   return 0;
 }
