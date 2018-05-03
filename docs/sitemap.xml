@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+ <url>
+  <loc>https://gramanas.github.io/ck/</loc>
+  <lastmod>2018-05-03T08:45:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/about/</loc>
+  <lastmod>2018-05-03T07:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/archive.html</loc>
+  <lastmod>2018-05-03T08:45:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/categories/</loc>
+  <lastmod>2018-05-03T07:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/ck-mode/</loc>
+  <lastmod>2018-05-03T08:45:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/emacs/</loc>
+  <lastmod>2018-05-03T07:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/galleries/</loc>
+  <lastmod>2018-05-03T07:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/listings/</loc>
+  <lastmod>2018-05-03T07:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://gramanas.github.io/ck/manual/</loc>
+  <lastmod>2018-05-03T07:54:00Z</lastmod>
+ </url>
+</urlset>

@@ -1,0 +1,11 @@
+compile_commands.json
+.cquery_cached_index
+
+site-src/*.py[cod]
+site-src/__pycache__
+site-src/cache
+site-src/output
+site-src/.doit.db
+site-src/.doit.db.db
+site-src/.venv
+site-src/nikolaserve.pid

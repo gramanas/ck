@@ -1,0 +1,25 @@
+#+BEGIN_COMMENT
+.. title: ck - the config keeper
+.. slug: index
+.. date: 2018-05-03 02:57:29 UTC+03:00
+.. tags: 
+.. category: 
+.. link: 
+.. description: 
+.. type: text
+#+END_COMMENT
+
+[[img-url:/pics/logo.png]]
+
+ck is currently in pre-alpha version, meaning barely usable and unsafe to use
+without a backup of your configs.
+
+ck is a C utility that aids with the config file management.
+It's a direct result of laziness.
+
+It basically moves a config file to a special directory
+and then links it to the place it should be.
+Later you can sync this directory with whatever way fits you.
+
+It also provides an convenient way to quickly edit any config file
+indexed by it.

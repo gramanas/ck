@@ -1,0 +1,127 @@
+#+OPTIONS: ^:nil
+#+BEGIN_COMMENT
+.. title: User Manual
+.. slug: manual
+.. date: 2018-05-03 03:01:35 UTC+03:00
+.. tags: 
+.. category: 
+.. link: 
+.. description: 
+.. type: text
+#+END_COMMENT
+
+Disclaimer: this is WIP
+
+ck's goal is to assist with the config file management.
+To that end it tries to provides a cli interface that is pretty straight-forward
+and intuitive.
+
+Example usage:
+#+BEGIN_SRC sh
+  # initialize new ck
+  $ ck init /path_to/where_you_want/your_configs/to_be \
+    /path_to/the_secret/directory
+
+  # add emacs configs
+  ## primary config
+  $ ck add emacs ~/.emacs.d/orgconf.org -p
+  ## secret config, with passwords and naughty words
+  $ ck add emacs ~/.emacs.d/accounts.org -s
+  ## and another one for emacs
+  $ ck add emacs ~/.emacs.d/init.el
+
+  # add tmux config
+  $ ck add tmux ~/.tmux.conf -p               
+#+END_SRC
+
+The first command after typing *ck* is the action you wish to perform. Actions are 
+a very important concept of ck. With an action you can initialize *ck*, add/move/delete
+configuration files to it, edit them, list them in various ways and search in their content.
+
+Actions expect their arguments in the order specified below. This is done to reduce the amount
+of flags one has to pass to ck.
+
+Not all of the above are implemented yet.
+
+Below I document everything that is available.
+
+* ck configuration
+ck uses sqlite to index the configuration files. The init
+action creates a *.ck* directory (by default under $HOME)
+in witch the *ckrc* and the *ckdb* reside. The first one contains
+the two directories described above while the other one is the
+sqlite db.
+
+One can have multiple *.ck* directories with different configurations
+each.
+
+Using the special keyword *config* (or *conf* or *c* or *-c*) you can set the path
+in which ck will search for the *.ck* directory.
+
+You can prefix every action below with this and ck will use the *.ck*
+directory of your choice.
+
+Usage:
+#+BEGIN_SRC sh
+  $ ck config ~/ ... # the default behaviour
+
+  # /someplace/else/.ck must exist or
+  # the action following it must be init
+  $ ck conf /someplace/else ... 
+
+  # same thing
+  $ ck c /someplace/else ... 
+  $ ck -c /someplace/else ... 
+#+END_SRC
+
+* Actions
+** init 
+or i or -i
+
+init takes up to exactly 2 arguments.
+
+- *config_dir*: where all the configs will live
+- *secret_dir*: where all the secret configs will live
+
+Use init once to initialize a new ck instance.
+
+Usage:
+#+BEGIN_SRC sh
+  # initialize new ck
+  $ ck init /path_to/where_you_want/your_configs/to_be \
+    /path_to/the_secret/directory
+#+END_SRC
+
+** add 
+or a or -a
+
+add takes 2 to 4 arguments.
+
+- *program_name*: the name of the program you add a config to
+- *config_path*: the path to the config
+- Optional: (order doesn't matter)
+  + *-p*: the config will be the primary (relevant on edit below)
+  + *-s*: the config will be stored in the secret_dir
+
+Use add to add a new config for ck to keep track of.
+
+Keep in mind:
+- The config has to exist
+- If you are adding a config to an existing program be sure to use the same name
+- Each program can have only one primary config
+
+Usage:
+#+BEGIN_SRC sh
+  # add config to ck
+  $ ck add program_name config_path [-s] [-p]
+#+END_SRC
+
+** edit 
+or e or -e
+
+Currently edit can only edit the primary config of a program.
+
+To do it use:
+#+BEGIN_SRC sh
+$ ck edit program_name
+#+END_SRC

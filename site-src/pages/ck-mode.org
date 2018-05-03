@@ -1,0 +1,17 @@
+#+BEGIN_COMMENT
+.. title: ck-mode
+.. slug: ck-mode
+.. date: 2018-05-03 03:01:46 UTC+03:00
+.. tags: 
+.. category: 
+.. link: 
+.. description: 
+.. type: text
+#+END_COMMENT
+
+In the future, i'd like to make an emacs frontend.
+The main reason being that I'd like to learn emacs lisp.
+
+Also, everything should have an emacs frontend.
+
+The main inspirations for this are: [[https://magit.vc/][magit]] and [[https://notmuchmail.org/][notmuch]]

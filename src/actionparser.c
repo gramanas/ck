@@ -18,14 +18,14 @@
 
 /* accepted commands */
 /* [0] is the count */
-const char* const strINIT[]    = {"2", "init", "-i"};
-const char* const strADD[]     = {"2", "add", "-a"};
-const char* const strDEL[]     = {"2", "del", "-d"};
-const char* const strEDIT[]    = {"3", "edit", "e", "-e"};
-const char* const strLIST[]    = {"3", "list", "ls", "-ls"};
-const char* const strSEARCH[]  = {"3", "search", "s", "-s"};
-const char* const strHELP[]    = {"4", "help", "?", "-h", "--help"};
-const char* const strConfDir[] = {"3", "config", "conf", "-c"};
+const char* const strINIT[]    = {"3", "init",   "i",  "-i"};
+const char* const strADD[]     = {"3", "add",    "a",  "-a"};
+const char* const strDEL[]     = {"3", "del",    "d",  "-d"};
+const char* const strEDIT[]    = {"3", "edit",   "e",  "-e"};
+const char* const strLIST[]    = {"5", "list",   "l",  "ls", "-l", "-ls"};
+const char* const strSEARCH[]  = {"3", "search", "s",  "-s"};
+const char* const strHELP[]    = {"5", "help",   "h",  "-?", "-h", "--help"};
+const char* const strConfDir[] = {"4", "config", "conf", "c", "-c"};
 
 /* Number of opts */
 static int optNum;
