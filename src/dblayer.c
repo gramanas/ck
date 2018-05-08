@@ -40,7 +40,7 @@ int check_initialized_DB(sqlite3 *db) {
   dbh_form_query_select_all_tables(sql);
   sqlite3_stmt *stmt;
 
-  int rc = sqlite3_prepare_v2(db, sql, strlen(sql), &stmt, NULL);
+  sqlite3_prepare_v2(db, sql, strlen(sql), &stmt, NULL);
 
   int program_table_ok, config_table_ok, rel_table_ok = 0;
   while (sqlite3_step(stmt) != SQLITE_DONE) {
@@ -306,8 +306,8 @@ int program_has_primary_config(DB *db, const int pid, char *ret, int *sec) {
     PRINT_ERR("while preparing program_has_primary_exists sql.");
     return -2;
   }
+
   sqlite3_bind_int(stmt, 1, pid);
-  int count = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     if (sqlite3_column_int(stmt, 0) == 1) {
       if (ret) {
