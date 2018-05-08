@@ -13,7 +13,8 @@
  * to edit when using ck edit and provides a backend to the ck list action.
  *
  * -------------------------------------------------------------------------- */
-
+#ifndef CKLIST_H
+#define CKLIST_H
 typedef struct cklist_st cklist;
 struct cklist_st {
   int size;
@@ -29,7 +30,7 @@ extern void list_rewind(cklist *ckl);
 extern int list_next(cklist *ckl);
 extern char* list_get(cklist *ckl);
 
-extern void list_size(cklist *ckl);
+extern int list_size(cklist *ckl);
 
 /* rewinds */
 extern cklist* list_duplicate(cklist *ckl);
@@ -54,3 +55,4 @@ extern void list_print(cklist *ckl);
 /* Deallocate resources */
 extern void list_free(cklist *ckl);
 
+#endif /* CKLIST_H */

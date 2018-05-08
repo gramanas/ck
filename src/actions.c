@@ -12,7 +12,7 @@
 #include "actionhelper.h"
 #include "dblayer.h"
 #include "ckutil.h"
-#include "engine.h"
+#include "cklist.h"
 
 int run_INIT(UserOpt * opt, Conf *conf) {
   UNUSED(conf);
@@ -32,44 +32,35 @@ int run_INIT(UserOpt * opt, Conf *conf) {
   return 1;
 }
 
-AddOpt make_add_options(const int argc, char **argv) {
+AddOpt make_add_options(cklist* args) {
+  list_rewind(args);
   /* since we are here, the first two argumens must exist */
   AddOpt addOpt = {
-    .progName = argv[0],
+    .progName = list_get(args),
     .confPath = NULL,
     .secret = 0,
     .prime = 0,
     .err = ADD_NO_ERR
   };
-  
-  if (!util_is_file_rw(argv[1])) {
+
+  list_next(args);
+  if (!util_is_file_rw(list_get(args))) {
     addOpt.err = ADD_ERR_WRONG_CONFIG;
     return addOpt;
   }
-  addOpt.confPath = argv[1];
+  addOpt.confPath = list_get(args);
 
-  if (argc == 3) {
-    if (strcmp(argv[2], "-s") == 0) {
+  while (list_next(args)) {
+    if (strcmp(list_get(args), "-s") == 0 && addOpt.secret == 0) {
       addOpt.secret = 1;
-    } else if (strcmp(argv[2], "-p") == 0) {
+    } else if (strcmp(list_get(args), "-p") == 0 && addOpt.prime == 0) {
       addOpt.prime = 1;
     } else {
       addOpt.err = ADD_ERR_WRONG_FLAGS;
       return addOpt;
     }
-  } else if (argc == 4) {
-    int i;
-    for (i = 2; i < 4; i++) {
-      if (strcmp(argv[i], "-s") == 0) {
-        addOpt.secret = 1;
-      } else if (strcmp(argv[i], "-p") == 0) {
-        addOpt.prime = 1;
-      } else {
-        addOpt.err = ADD_ERR_WRONG_FLAGS;
-        return addOpt;
-      }
-    }
   }
+  list_rewind(args);
   return addOpt;
 }
 
@@ -92,7 +83,7 @@ int run_ADD(UserOpt * opt, Conf *conf) {
     }
     return 0;
   }
-  AddOpt addOpt = make_add_options(opt->argc, opt->argv);
+  AddOpt addOpt = make_add_options(opt->args);
   switch (addOpt.err) {
   case ADD_NO_ERR:
     break;
@@ -111,9 +102,9 @@ int run_ADD(UserOpt * opt, Conf *conf) {
     return 0;
   }
   close_DB(&db);
-  engine_add_make_link(&addOpt, conf);
+  add_make_link(&addOpt, conf);
   char err[STR_M];
-  if (engine_err_message(err)) {
+  if (add_err_message(err)) {
     PRINT_ERR(err);
     return 0;
   }
@@ -135,11 +126,12 @@ int run_EDIT(UserOpt *opt, Conf *conf) {
     return 0;
   }
 
+  list_rewind(opt->args);
   char confPath[STR_M];
-  if (opt->argc == 1) {
+  if (list_size(opt->args) == 1) {
     char confName[STR_M];
     int secret = 0;
-    if (edit_get_prime_config_from_program(&db, opt->argv[0], confName, &secret) == 1) {
+    if (edit_get_prime_config_from_program(&db, list_get(opt->args), confName, &secret) == 1) {
       str_join_dirname_with_basename(confPath, secret ? conf->SCRT_dir : conf->VC_dir, confName);
       printf("%s\n", confPath);
     } else {
@@ -150,12 +142,12 @@ int run_EDIT(UserOpt *opt, Conf *conf) {
   } else {
     close_DB(&db);
     char confName[STR_L];
-    switch (edit_get_config_or_suggestions(opt->argc,
-                                           opt->argv,
-                                           confName)) {
+    switch (edit_get_config_or_suggestions(opt->args, confName)) {
     case ERC_OK:
       return 0;
     case ERC_ERR:
+      return 1;
+    case ERC_SUGGESTIONS:
       return 1;
     }
     return 1;
@@ -180,9 +172,7 @@ int run_LIST(UserOpt *opt, Conf *conf) {
     }
     return 0;
   }
-  for (int i = 0; i < opt->argc; i++) {
-    printf("[%d]: %s\n", i, opt->argv[i]);
-  }
+  list_print_lisp(opt->args);
   close_DB(&db);
   return 0;
 }

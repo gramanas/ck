@@ -58,10 +58,13 @@ int next_token() {
 void get_opt(int position, UserOpt *opt) {
   /* get arg */
   next_token();
+  list_add(opt->args, token);
+}
 
-  /* allocate memory */
-  opt->argv[position] = (char *)malloc((strlen(token))*sizeof(char) + 1);
-  strcpy(opt->argv[position], token);
+void fill_args_list(int arg_num, UserOpt *opt) {
+  for (int i = 0; i < arg_num; i++) {
+    get_opt(i, opt);
+  }
 }
 
 /* When starting to parse the action,
@@ -71,15 +74,13 @@ void get_opt(int position, UserOpt *opt) {
 int parse_INIT(UserOpt *opt) {
   /* INIT expects 2 arguments
    * starting from 0 */
-  opt->argc = 2;
-  if (optNum != pos /* already consumed */ + opt->argc) {
+  int arg_num = 2;
+  if (optNum != pos /* already consumed */ + arg_num) {
     opt->err = PERR_INIT_WRONG;
     return -1;
   }
 
-  for (int i = 0; i < opt->argc; i++) {
-    get_opt(i, opt);
-  }
+  fill_args_list(arg_num, opt);
   return 1;
 }
 
@@ -91,10 +92,8 @@ int parse_ADD(UserOpt *opt) {
     return -1;
   }
 
-  opt->argc = optNum - pos;
-  for (int i = 0; i < opt->argc; i++) {
-    get_opt(i, opt);
-  }
+  int arg_num = optNum - pos;
+  fill_args_list(arg_num, opt);
   return 1;
 }
 
@@ -107,14 +106,21 @@ int parse_EDIT(UserOpt *opt) {
     opt->err = PERR_EDIT_WRONG;
     return -1;
   }
-  opt->argc = optNum - pos;
-  for (int i = 0; i < opt->argc; i++) {
-    get_opt(i, opt);
-  }
+
+  int arg_num = optNum - pos;
+  fill_args_list(arg_num, opt);
   return 1;
 }
 int parse_LIST(UserOpt *opt) {
-  return -1;
+  /* List expects a maximum of than 2 arguments */
+  if (optNum > pos + 2) {
+    opt->err = PERR_EDIT_WRONG;
+    return -1;
+  }
+
+  int arg_num = optNum - pos;
+  fill_args_list(arg_num, opt);
+  return 1;
 }
 int parse_SEARCH(UserOpt *opt) {
   return -1;
@@ -162,11 +168,8 @@ UserOpt make_empty_user_opt() {
   UserOpt opt;
   opt.action = -1;
   opt.err = PERR_NOERR;
-  opt.argc = 0;
   opt.confDir = NULL;
-  for (int i = 0; i < 10; i++) {
-    opt.argv[i] = NULL;
-  }
+  opt.args = list_make_new();
   return opt;
 }
 
@@ -174,14 +177,10 @@ UserOpt make_empty_user_opt() {
 /* called to free the resources
  * UserOpt holds */
 void free_user_opt(UserOpt *opt) {
-  for (int i = 0; i < 10; i++) {
-    if (opt->argv[i] != NULL) {
-      free(opt->argv[i]);
-    }
-  }
   if (opt->confDir != NULL) {
     free(opt->confDir);
   }
+  list_free(opt->args);
 }
 
 /* If the used has specified a config file other

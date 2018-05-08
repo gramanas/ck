@@ -127,25 +127,36 @@ cklist* list_copy_part(cklist *ckl, int from, int until) {
 }
 
 void list_print_lisp(cklist *ckl) {
-  list_rewind(ckl);
-  printf("( \"%s\"", list_get(ckl));
-  while (list_next(ckl)) {
-    if (ckl->pos == ckl->size-1) {
-      printf(", \"%s\" )\n", list_get(ckl));
+  if (ckl->size > 0) {
+    list_rewind(ckl);
+    printf("( \"%s\"", list_get(ckl));
+    if (ckl->size == 1) {
+      printf(" )\n");
     }
-    else {
-    printf(", \"%s\"", list_get(ckl));
+    while (list_next(ckl)) {
+      if (ckl->pos == ckl->size-1) {
+        printf(", \"%s\" )\n", list_get(ckl));
+      }
+      else {
+        printf(", \"%s\"", list_get(ckl));
+      }
     }
+    list_rewind(ckl);
   }
-  list_rewind(ckl);
 }
 
 void list_print(cklist *ckl) {
-  list_rewind(ckl);
-  while (list_next(ckl)) {
-    printf("%s\n", list_get(ckl));
+  if (ckl->size > 0) {
+    list_rewind(ckl);
+    while (list_next(ckl)) {
+      printf("%s\n", list_get(ckl));
+    }
+    list_rewind(ckl);
   }
-  list_rewind(ckl);
+}
+
+int list_size(cklist *ckl) {
+  return ckl->size;
 }
 
 void list_free(cklist *ckl) {

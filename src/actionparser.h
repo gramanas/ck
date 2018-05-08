@@ -22,6 +22,8 @@
 #ifndef ACTIONPARSER_H
 #define ACTIONPARSER_H
 
+#include "cklist.h"
+
 #define CK_ACTIONS                                                   \
   X(INIT)                                                            \
   X(ADD)                                                             \
@@ -62,8 +64,7 @@ struct UserOptions {
   ParseError err;
   CkAction action;
   char *confDir;
-  int argc;
-  char *argv[10]; // action's options
+  cklist *args;
 };
 
 

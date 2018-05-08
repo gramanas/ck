@@ -38,8 +38,8 @@ set(ckLib_src
   ${SRC_DIR}/dbhelper.c
   ${SRC_DIR}/ckutil.c
   ${SRC_DIR}/cklist.c
-  ${SRC_DIR}/engine.c
 )
+
 set(ckLib_hdr
   ${SRC_DIR}/actionparser.h
   ${SRC_DIR}/actions.h
@@ -49,7 +49,6 @@ set(ckLib_hdr
   ${SRC_DIR}/dbhelper.h
   ${SRC_DIR}/ckutil.h
   ${SRC_DIR}/cklist.h
-  ${SRC_DIR}/engine.h
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${RES_DIR}/cmake)

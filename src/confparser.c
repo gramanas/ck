@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 #include "ckutil.h"
+#include "cklist.h"
 #include "confparser.h"
 
 
@@ -138,14 +139,16 @@ void free_conf(Conf *conf) {
 }
 
 int init_create_config_file(UserOpt *opt) {
-  char tmp[200];
-  if (!util_file_exists(opt->argv[0])) {
-    printf("Version control directory: %s\ndoes not exist.\n", opt->argv[0]);
+  list_rewind(opt->args);
+  
+  if (!util_file_exists(list_get(opt->args))) {
+    printf("Version control directory: %s\ndoes not exist.\n", list_get(opt->args));
     return 1;
   }
 
-  if (!util_file_exists(opt->argv[1])) {
-    printf("Secret directory: %s\ndoes not exist.\n", opt->argv[1]);
+  list_next(opt->args);
+  if (!util_file_exists(list_get(opt->args))) {
+    printf("Secret directory: %s\ndoes not exist.\n", list_get(opt->args));
     return 1;
   }
   
@@ -159,17 +162,21 @@ int init_create_config_file(UserOpt *opt) {
   if ((f = fopen(confName, "w")) == NULL) {
     return 1;
   }
-  
+
+  list_rewind(opt->args);
+  char tmp[200];
   strcpy(tmp, "version_control_dir = ");
-  strcat(tmp, opt->argv[0]);
+  strcat(tmp, list_get(opt->args));
   strcat(tmp, "\n");
   fputs(tmp, f);
 
+  list_next(opt->args);
   strcpy(tmp, "secret_dir = ");
-  strcat(tmp, opt->argv[1]);
+  strcat(tmp, list_get(opt->args));
   strcat(tmp, "\n");
   fputs(tmp, f);
-  fclose(f);
 
+  fclose(f);
+  list_rewind(opt->args);  
   return 0;
 }
