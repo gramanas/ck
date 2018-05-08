@@ -1,3 +1,13 @@
+## actionparser.c - Action parser for ck -------------------------------*- C -*-
+##
+## This file is part of ck, the config keeper
+##
+## -----------------------------------------------------------------------------
+##
+## Copyright (C) 2018  Anastasis Grammenos
+## GPLv3 (see LICENCE for the full notice)
+##
+## -------------------------------------------------------------------------- */
 cmake_minimum_required (VERSION 3.5.6)
 project(ck C)
 
@@ -22,19 +32,23 @@ set(ckLib_src
   ${SRC_DIR}/ck.c
   ${SRC_DIR}/actionparser.c
   ${SRC_DIR}/actions.c
+  ${SRC_DIR}/actionhelper.c
   ${SRC_DIR}/confparser.c
   ${SRC_DIR}/dblayer.c
   ${SRC_DIR}/dbhelper.c
   ${SRC_DIR}/ckutil.c
+  ${SRC_DIR}/cklist.c
   ${SRC_DIR}/engine.c
 )
 set(ckLib_hdr
   ${SRC_DIR}/actionparser.h
   ${SRC_DIR}/actions.h
+  ${SRC_DIR}/actionhelper.h
   ${SRC_DIR}/confparser.h
   ${SRC_DIR}/dblayer.h
   ${SRC_DIR}/dbhelper.h
   ${SRC_DIR}/ckutil.h
+  ${SRC_DIR}/cklist.h
   ${SRC_DIR}/engine.h
 )
 

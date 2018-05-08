@@ -30,6 +30,7 @@
 
 #include "actions.h"
 #include "dblayer.h"
+#include "cklist.h"
 #include "ckutil.h"
 
 void free_res(UserOpt *opt, Conf *conf) {
@@ -42,6 +43,31 @@ void free_res(UserOpt *opt, Conf *conf) {
 }
 
 int main(int argc, char *argv[]) {
+
+  cklist *p;
+  p = list_make_and_add("0");
+  list_add(p, "1");
+  list_add(p, "2");
+  list_add(p, "3");
+  list_add(p, "4");
+  list_add(p, "5");
+  list_add(p, "6");
+  list_add(p, "7");
+  list_add(p, "8");
+  list_print_lisp(p);
+  cklist *po = list_move(p);
+  cklist *po_l = list_copy_until(po, 4);
+  list_print_lisp(po_l);
+  cklist *po_r = list_copy_from(po, 5);
+  list_print_lisp(po_r);
+  cklist *po_part = list_copy_part(po, 2, 4);
+  list_print_lisp(po_part);
+  list_print(po);
+  list_free(po_part);
+  list_free(po);
+  list_free(po_l);
+  list_free(po_r);
+
   UserOpt opt;
   /* get user opt */
   switch(parse_action(argc, argv, &opt)) {

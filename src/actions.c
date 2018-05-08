@@ -9,6 +9,7 @@
  *
  * -------------------------------------------------------------------------- */
 #include "actions.h"
+#include "actionhelper.h"
 #include "dblayer.h"
 #include "ckutil.h"
 #include "engine.h"
@@ -57,21 +58,16 @@ AddOpt make_add_options(const int argc, char **argv) {
       return addOpt;
     }
   } else if (argc == 4) {
-    if (strcmp(argv[2], "-s") == 0) {
-      addOpt.secret = 1;
-    } else if (strcmp(argv[2], "-p") == 0) {
-      addOpt.prime = 1;
-    } else {
-      addOpt.err = ADD_ERR_WRONG_FLAGS;
-      return addOpt;
-    }
-    if (strcmp(argv[3], "-s") == 0) {
-      addOpt.secret = 1;
-    } else if (strcmp(argv[3], "-p") == 0) {
-      addOpt.prime = 1;
-    } else {
-      addOpt.err = ADD_ERR_WRONG_FLAGS;
-      return addOpt;
+    int i;
+    for (i = 2; i < 4; i++) {
+      if (strcmp(argv[i], "-s") == 0) {
+        addOpt.secret = 1;
+      } else if (strcmp(argv[i], "-p") == 0) {
+        addOpt.prime = 1;
+      } else {
+        addOpt.err = ADD_ERR_WRONG_FLAGS;
+        return addOpt;
+      }
     }
   }
   return addOpt;
@@ -151,6 +147,18 @@ int run_EDIT(UserOpt *opt, Conf *conf) {
       close_DB(&db);
       return 0;
     }
+  } else {
+    close_DB(&db);
+    char confName[STR_L];
+    switch (edit_get_config_or_suggestions(opt->argc,
+                                           opt->argv,
+                                           confName)) {
+    case ERC_OK:
+      return 0;
+    case ERC_ERR:
+      return 1;
+    }
+    return 1;
   }
   close_DB(&db);
     
