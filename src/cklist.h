@@ -29,6 +29,7 @@ extern void list_rewind(cklist *ckl);
 
 extern int list_next(cklist *ckl);
 extern char* list_get(cklist *ckl);
+extern char* list_get_at(cklist *ckl, int pos);
 
 extern int list_size(cklist *ckl);
 

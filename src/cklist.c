@@ -60,6 +60,17 @@ char* list_get(cklist *ckl) {
   return ckl->arr[ckl->pos];
 }
 
+char* list_get_at(cklist *ckl, int pos) {
+  if (ckl->pos == -1) {
+    return NULL;
+  }
+  if (ckl->pos >= ckl->size
+      || pos >= ckl->size) {
+    return NULL;
+  }
+  return ckl->arr[pos];
+}
+
 void list_rewind(cklist *ckl) {
   ckl->pos = 0;
 }

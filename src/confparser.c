@@ -139,16 +139,13 @@ void free_conf(Conf *conf) {
 }
 
 int init_create_config_file(UserOpt *opt) {
-  list_rewind(opt->args);
-  
-  if (!util_file_exists(list_get(opt->args))) {
-    printf("Version control directory: %s\ndoes not exist.\n", list_get(opt->args));
+  if (!util_file_exists(list_get_at(opt->args, 0))) {
+    printf("Version control directory: %s\ndoes not exist.\n", list_get_at(opt->args, 0));
     return 1;
   }
 
-  list_next(opt->args);
-  if (!util_file_exists(list_get(opt->args))) {
-    printf("Secret directory: %s\ndoes not exist.\n", list_get(opt->args));
+  if (!util_file_exists(list_get_at(opt->args, 1))) {
+    printf("Secret directory: %s\ndoes not exist.\n", list_get_at(opt->args, 1));
     return 1;
   }
   
@@ -163,20 +160,17 @@ int init_create_config_file(UserOpt *opt) {
     return 1;
   }
 
-  list_rewind(opt->args);
   char tmp[200];
   strcpy(tmp, "version_control_dir = ");
-  strcat(tmp, list_get(opt->args));
+  strcat(tmp, list_get_at(opt->args, 0));
   strcat(tmp, "\n");
   fputs(tmp, f);
 
-  list_next(opt->args);
   strcpy(tmp, "secret_dir = ");
-  strcat(tmp, list_get(opt->args));
+  strcat(tmp, list_get_at(opt->args, 1));
   strcat(tmp, "\n");
   fputs(tmp, f);
 
   fclose(f);
-  list_rewind(opt->args);  
   return 0;
 }

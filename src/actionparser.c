@@ -55,7 +55,7 @@ int next_token() {
 
 /* copy the option from the list
  * to the UserOpt struct */
-void get_opt(int position, UserOpt *opt) {
+void get_opt(UserOpt *opt) {
   /* get arg */
   next_token();
   list_add(opt->args, token);
@@ -63,7 +63,7 @@ void get_opt(int position, UserOpt *opt) {
 
 void fill_args_list(int arg_num, UserOpt *opt) {
   for (int i = 0; i < arg_num; i++) {
-    get_opt(i, opt);
+    get_opt(opt);
   }
 }
 

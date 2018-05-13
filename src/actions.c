@@ -206,7 +206,7 @@ void print_DEL_result(int ok) {
     printf("succes\n");
     return;
   }
-  printf("failure\n");
+  printf("Not Supported\n");
 }
 
 void print_EDIT_result(int ok) {
@@ -222,7 +222,7 @@ void print_LIST_result(int ok) {
     printf("succes\n");
     return;
   }
-  printf("failure\n");
+  printf("Not Supported\n");
 }
 
 void print_SEARCH_result(int ok) {
@@ -230,7 +230,7 @@ void print_SEARCH_result(int ok) {
     printf("succes\n");
     return;
   }
-  printf("failure\n");
+  printf("Not Supported\n");
 }
 
 void print_HELP_result(int ok) {
